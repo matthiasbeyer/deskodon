@@ -1,24 +1,24 @@
-{ nixpkgs ? <nixpkgs>
+{ pkgs
+, lib ? pkgs.lib
 , config ? {}
 }:
-
-with (import nixpkgs config);
 
 let
   mkDerivation =
     { srcs ? ./elm-srcs.nix
     , src
     , name
-    , srcdir ? "../ui"
+    , srcdir
     , targets ? []
     , registryDat ? ./elmregistry.dat
     , outputJavaScript ? false
     }:
-    stdenv.mkDerivation {
+
+    pkgs.stdenv.mkDerivation {
       inherit name src;
 
-      buildInputs = [ elmPackages.elm ]
-        ++ lib.optional outputJavaScript nodePackages.uglify-js;
+      buildInputs = [ pkgs.elmPackages.elm ]
+        ++ lib.optional outputJavaScript pkgs.nodePackages.uglify-js;
 
       buildPhase = pkgs.elmPackages.fetchElmDeps {
         elmPackages = import srcs;
@@ -45,9 +45,9 @@ let
 in mkDerivation {
   name = "elm-app-0.1.0";
   srcs = ./elm-srcs.nix;
-  src = ./.;
+  src = ./..;
   targets = ["Main"];
-  srcdir = "./src";
+  srcdir = "./ui";
   outputJavaScript = false;
 }
 
