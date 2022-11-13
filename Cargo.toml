@@ -1,0 +1,12 @@
+#
+# This has to be a workspace because tauri tooling fights _really_ hard again
+# tauri-app source code outside of a "src-tauri" directory.
+#
+# So to be able to build this with both standard rust tooling and nix, we need
+# to do this ugly hack... which is embarrasing given that tauri wants to be "the
+# UI thing" in rust...
+#
+[workspace]
+members = [
+    "src-tauri"
+]
