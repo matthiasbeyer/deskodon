@@ -48,6 +48,6 @@ in mkDerivation {
   src = ./..;
   targets = ["Main"];
   srcdir = "./ui";
-  outputJavaScript = false;
+  outputJavaScript = true;
 }
 
