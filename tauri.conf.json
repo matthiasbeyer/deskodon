@@ -1,9 +1,9 @@
 {
   "build": {
-    "beforeBuildCommand": "",
-    "beforeDevCommand": "",
-    "devPath": "ui-out",
-    "distDir": "ui-out"
+    "beforeBuildCommand": "elm make ui/Main.elm --output=ui-out/Main.js",
+    "beforeDevCommand": "elm make ui/Main.elm --output=ui-out/Main.js",
+    "devPath": "../ui-out",
+    "distDir": "../ui-out"
   },
   "package": {
     "productName": "deskodon",
