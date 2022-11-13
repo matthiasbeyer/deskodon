@@ -1,10 +1,10 @@
 [package]
-name = "app"
+name = "deskodon"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["Matthias Beyer <mail@beyermatthias.de>"]
+license = "GPL-2.0-only"
+repository = "https://github.com/matthiasbeyer/deskodon"
 default-run = "app"
 edition = "2021"
 rust-version = "1.59"
