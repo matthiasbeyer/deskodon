@@ -79,7 +79,7 @@
           cargoExtraArgs = "--all-features";
 
           preBuild = ''
-            mkdir ./ui-out
+            mkdir -p ./ui-out
             cp -rv ${elmArtifacts}/* ./ui-out/
             cp ${src}/ui/index.html ./ui-out/index.html
           '';
