@@ -20,12 +20,28 @@
   };
 
   outputs = { self, nixpkgs, crane, flake-utils, rust-overlay, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
         pkgs = import nixpkgs {
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
+
+        tauriBuildInputs = with pkgs; [
+          appimagekit
+          cargo-tauri
+          cmake
+          dbus
+          glib
+          gtk3
+          libayatana-appindicator-gtk3
+          librsvg
+          libsoup
+          openssl
+          pkg-config
+          webkitgtk
+          libsoup
+        ];
 
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
@@ -52,34 +68,24 @@
         cargoArtifacts = craneLib.buildDepsOnly {
           inherit src pname;
 
-          buildInputs = [
-            pkgs.pkg-config
-            pkgs.openssl
-            pkgs.cmake
-            pkgs.librsvg
-            pkgs.gtk3-x11
-            pkgs.libayatana-appindicator-gtk3
-          ];
+          buildInputs = tauriBuildInputs ++ [];
         };
+
+        elmArtifacts = import ./nix/elm2nix.nix { inherit pkgs; };
 
         deskodon = craneLib.buildPackage {
           inherit cargoArtifacts src pname version;
 
           cargoExtraArgs = "--all-features";
 
-          buildInputs = with pkgs; [
-            appimagekit
-            cargo-tauri
-            cmake
-            dbus
-            glib
-            gtk3
-            libayatana-appindicator-gtk3
-            librsvg
-            libsoup
-            openssl
-            pkg-config
-            webkitgtk
+          preBuild = ''
+            mkdir ./ui-out
+            cp -rv ${elmArtifacts}/* ./ui-out/
+            cp ${src}/ui/index.html ./ui-out/index.html
+          '';
+
+          buildInputs = tauriBuildInputs ++ [
+            elmArtifacts
           ];
         };
 
@@ -128,6 +134,7 @@
             gitlint
             pkg-config
             cmake
+            elmPackages.elm
           ];
         };
       }
