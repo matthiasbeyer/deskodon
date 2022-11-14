@@ -1,5 +1,5 @@
 use iced::{
-    widget::{text, Column, Container},
+    widget::{text, text_input, Column, Container},
     Application, Length, Theme,
 };
 
@@ -78,8 +78,19 @@ impl Application for Deskodon {
                             .into()
                     } else {
                         let text = text("Enter credentials");
+                        let username = text_input("Username", "", |s: String| -> Message {
+                            Message::UsernameInputChanged(s)
+                        });
 
-                        let content = Column::new().spacing(20).push(text);
+                        let instance = text_input("mastodon.social", "", |s: String| -> Message {
+                            Message::InstanceInputChanged(s)
+                        });
+
+                        let content = Column::new()
+                            .spacing(20)
+                            .push(text)
+                            .push(username)
+                            .push(instance);
 
                         Container::new(content)
                             .width(Length::Fill)
