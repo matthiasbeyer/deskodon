@@ -19,7 +19,7 @@ impl Application for Deskodon {
     type Theme = Theme;
 
     fn new(_name: String) -> (Self, iced::Command<Self::Message>) {
-        (Self::LoginScreen {}, iced::Command::none())
+        (Self::LoginScreen {}, iced::Command::perform(crate::config::load(), Message::ConfigLoaded))
     }
 
     fn title(&self) -> String {

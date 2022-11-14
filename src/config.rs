@@ -43,3 +43,14 @@ impl Config {
     }
 
 }
+
+pub async fn load() -> Result<Config, miette::Error> {
+    let xdg = xdg::BaseDirectories::with_prefix("deskodon")
+        .into_diagnostic()?;
+
+    let config = Config::load_xdg(&xdg)
+        .await?
+        .unwrap_or_else(|| Config::empty());
+
+    Ok(config)
+}

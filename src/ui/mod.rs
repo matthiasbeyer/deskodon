@@ -11,7 +11,7 @@ mod message;
 
 use crate::ui::app::Deskodon;
 
-pub fn boot(config: Arc<Mutex<Config>>) -> Result<(), miette::Error> {
+pub fn boot() -> Result<(), miette::Error> {
     let settings = iced::Settings {
         window: iced::window::Settings {
             resizable: true,
