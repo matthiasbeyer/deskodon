@@ -1,6 +1,6 @@
 use iced::{widget::{Column, Container, text}, Length, Application, Theme};
 
-use crate::ui::message::Message;
+use crate::app::message::Message;
 
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant)]

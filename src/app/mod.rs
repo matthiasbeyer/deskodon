@@ -1,15 +1,9 @@
-use std::sync::Arc;
-
 use iced::Application;
-use miette::IntoDiagnostic;
-use tokio::sync::Mutex;
 
-use crate::config::Config;
-
-mod app;
+mod deskodon;
 mod message;
 
-use crate::ui::app::Deskodon;
+use self::deskodon::Deskodon;
 
 pub fn boot() -> Result<(), miette::Error> {
     let settings = iced::Settings {
