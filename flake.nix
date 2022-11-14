@@ -38,9 +38,27 @@
           openssl
           pkgconfig
           xorg.libX11
+          xorg.libXcomposite
           xorg.libXcursor
+          xorg.libXext
+          xorg.libXfont
+          xorg.libXfont2
+          xorg.libXft
           xorg.libXi
+          xorg.libXinerama
+          xorg.libXmu
+          xorg.libXpm
+          xorg.libXpresent
           xorg.libXrandr
+          xorg.libXrender
+          xorg.libXt
+          xorg.libXtst
+          xorg.libXxf86misc
+          xorg.libXxf86vm
+          xorg.libxcb
+          xorg.libxkbfile
+          xorg.libxshmfence
+          mesa
         ];
 
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -74,6 +92,13 @@
           inherit cargoArtifacts src pname version;
           cargoExtraArgs = "--all-features";
           inherit buildInputs;
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            gtk-layer-shell
+            gtk3
+          ];
+
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
         };
 
         cargo-check-everything = pkgs.writeScriptBin "cargo-check-everything" ''
@@ -101,8 +126,7 @@
         devShells.deskodon = pkgs.mkShell {
           inherit buildInputs;
 
-          LD_LIBRARY_PATH = builtins.foldl'
-            (a: b: "${a}:${b}/lib") "${pkgs.vulkan-loader}/lib" buildInputs;
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
 
           nativeBuildInputs = with pkgs; [
             rustTarget
