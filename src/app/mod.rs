@@ -5,7 +5,7 @@ mod message;
 
 use self::deskodon::Deskodon;
 
-pub fn boot() -> Result<(), miette::Error> {
+pub fn boot() -> Result<(), iced::Error> {
     let settings = iced::Settings {
         window: iced::window::Settings {
             resizable: true,
@@ -19,6 +19,6 @@ pub fn boot() -> Result<(), miette::Error> {
         ..iced::Settings::default()
     };
 
-    Deskodon::run(settings).into_diagnostic().map_err(miette::Error::from)
+    Deskodon::run(settings)
 }
 
