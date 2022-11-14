@@ -2,10 +2,10 @@ use miette::Context;
 use miette::Error;
 use miette::IntoDiagnostic;
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Config {
     username: Option<String>,
-    instance: Option<url::Url>,
+    instance: Option<String>,
 }
 
 impl Config {
@@ -16,11 +16,20 @@ impl Config {
         }
     }
 
-    /// Returns None if login credentials are not complete
-    pub fn get_login(&self) -> Option<(&str, &url::Url)> {
-        self.username
-            .as_ref()
-            .and_then(|name| self.instance.as_ref().map(|url| (name.as_ref(), url)))
+    pub fn username(&self) -> Option<&str> {
+        self.username.as_ref().map(AsRef::as_ref)
+    }
+
+    pub fn set_username(&mut self, s: String) {
+        self.username = Some(s)
+    }
+
+    pub fn instance(&self) -> Option<&str> {
+        self.instance.as_ref().map(AsRef::as_ref)
+    }
+
+    pub fn set_instance(&mut self, s: String) {
+        self.instance = Some(s)
     }
 
     /// Load the configuration if it exists
