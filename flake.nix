@@ -31,6 +31,7 @@
           cmake
           openssl
           pkg-config
+          fontconfig
         ];
 
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;

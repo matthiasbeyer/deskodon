@@ -3,7 +3,37 @@ name = "deskodon"
 version = "0.1.0"
 edition = "2021"
 
+authors = ["Matthias Beyer <mail@beyermatthias.de>"]
+description = "Mastodon Desktop Application"
+keywords = ["social", "mastodon", "GUI"]
+readme = "README.md"
+license = "GPL-2.0"
+repository = "https://github.com/matthiasbeyer/deskodon"
+homepage = "http://github.com/matthiasbeyer/deskodon"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-trait = "0.1.58"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["cargo"] }
+futures = "0.3"
+getset = "0.1"
+megalodon = "0.2"
+miette = "5.4"
+serde = { version = "1", features = [ "derive" ] }
+tokio = { version = "1", features = ["rt", "macros"] }
+tracing = "0.1"
+url = "2.3"
+xdg = "2.4"
+
+[dependencies.iced]
+version = "0.5"
+default-features = false
+features = ["glow", "tokio", "debug"]
+
+
+[dependencies.iced_native]
+version = "0.5.1"
+default-features = false
 
