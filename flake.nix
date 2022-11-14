@@ -27,20 +27,10 @@
           overlays = [ (import rust-overlay) ];
         };
 
-        tauriBuildInputs = with pkgs; [
-          appimagekit
-          cargo-tauri
+        buildInputs = with pkgs; [
           cmake
-          dbus
-          glib
-          gtk3
-          libayatana-appindicator-gtk3
-          librsvg
-          libsoup
           openssl
           pkg-config
-          webkitgtk
-          libsoup
         ];
 
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -67,26 +57,13 @@
 
         cargoArtifacts = craneLib.buildDepsOnly {
           inherit src pname;
-
-          buildInputs = tauriBuildInputs ++ [];
+          inherit buildInputs;
         };
-
-        elmArtifacts = import ./nix/elm2nix.nix { inherit pkgs; };
 
         deskodon = craneLib.buildPackage {
           inherit cargoArtifacts src pname version;
-
           cargoExtraArgs = "--all-features";
-
-          preBuild = ''
-            mkdir -p ./ui-out
-            cp -rv ${elmArtifacts}/* ./ui-out/
-            cp ${src}/ui/index.html ./ui-out/index.html
-          '';
-
-          buildInputs = tauriBuildInputs ++ [
-            elmArtifacts
-          ];
+          inherit buildInputs;
         };
 
         cargo-check-everything = pkgs.writeScriptBin "cargo-check-everything" ''
@@ -112,29 +89,17 @@
 
         devShells.default = devShells.deskodon;
         devShells.deskodon = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            appimagekit
-            dbus
-            glib
-            gtk3
-            libayatana-appindicator-gtk3
-            librsvg
-            libsoup
-            openssl
-            webkitgtk
-          ];
+          inherit buildInputs;
 
           nativeBuildInputs = with pkgs; [
             rustTarget
 
             cargo-check-everything
 
-            cargo-tauri
             cargo-deny
             gitlint
             pkg-config
             cmake
-            elmPackages.elm
           ];
         };
       }
