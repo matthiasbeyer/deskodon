@@ -1,4 +1,4 @@
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub enum Message {
     ConfigLoaded(crate::config::Config),
     ConfigLoadingFailed(String),
@@ -6,8 +6,24 @@ pub enum Message {
     InstanceInputChanged(String),
     UsernameInputChanged(String),
 
-    LoginButtonPressed,
+    GenerateAccessTokenButtonPressed,
+    GeneratedAuth(crate::mastodon::Auth),
+    GeneratedAuthFailed(String),
 
-    LoggedIn(()),
+    AccessTokenInputChanged(String),
+
+    LoginButtonPressed(crate::mastodon::Auth, String),
+    SavingConfigSucceeded,
+    SavingConfigFailed(String),
+
+    UrlOpened,
+    UrlOpenFailed(String),
+
+    AccessTokenFetched(crate::mastodon::AccessToken),
+    AccessTokenFetchFailed(String),
+
+    LoggedIn,
     LoginFailed(String),
+
+    None,
 }

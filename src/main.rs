@@ -1,6 +1,7 @@
 mod app;
 mod config;
 mod mastodon;
+mod util;
 
 fn main() -> Result<(), miette::Error> {
     tracing_subscriber::fmt::init();
