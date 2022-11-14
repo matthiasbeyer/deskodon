@@ -558,6 +558,7 @@ dependencies = [
  "miette",
  "serde",
  "tokio",
+ "toml",
  "tracing",
  "url",
  "xdg",

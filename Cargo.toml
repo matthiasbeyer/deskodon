@@ -23,6 +23,7 @@ megalodon = "0.2"
 miette = "5.4"
 serde = { version = "1", features = [ "derive" ] }
 tokio = { version = "1", features = ["rt", "macros"] }
+toml = "0.5"
 tracing = "0.1"
 url = "2.3"
 xdg = "2.4"

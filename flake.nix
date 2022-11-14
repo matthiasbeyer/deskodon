@@ -29,9 +29,18 @@
 
         buildInputs = with pkgs; [
           cmake
-          openssl
-          pkg-config
+          expat
           fontconfig
+          freetype
+          freetype.dev
+          libGL
+          libxkbcommon
+          openssl
+          pkgconfig
+          xorg.libX11
+          xorg.libXcursor
+          xorg.libXi
+          xorg.libXrandr
         ];
 
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -91,6 +100,9 @@
         devShells.default = devShells.deskodon;
         devShells.deskodon = pkgs.mkShell {
           inherit buildInputs;
+
+          LD_LIBRARY_PATH = builtins.foldl'
+            (a: b: "${a}:${b}/lib") "${pkgs.vulkan-loader}/lib" buildInputs;
 
           nativeBuildInputs = with pkgs; [
             rustTarget
