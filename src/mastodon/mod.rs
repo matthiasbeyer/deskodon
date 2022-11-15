@@ -2,6 +2,9 @@ use futures::FutureExt;
 use megalodon::Megalodon;
 use tracing::{Instrument, trace_span, info_span};
 
+mod mastodon;
+pub use self::mastodon::Mastodon;
+
 #[derive(Debug, Clone)]
 pub struct Auth {
     pub client_id: String,

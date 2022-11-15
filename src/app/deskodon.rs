@@ -18,7 +18,7 @@ pub(crate) enum Deskodon {
     EnterAuthToken { config: Config, auth: crate::mastodon::Auth },
 
     DefaultView {
-        access_token: crate::mastodon::AccessToken,
+        mastodon: crate::mastodon::Mastodon,
     }
 }
 
@@ -147,7 +147,7 @@ impl Application for Deskodon {
                     let fetch_access_token =
                         iced::Command::perform(crate::mastodon::fetch_access_token(instance, client_id, client_secret, auth_token), |result| {
                             match result {
-                                Ok(token) => Message::AccessTokenFetched(token),
+                                Ok(token) => Message::AccessTokenFetched(auth, token),
                                 Err(e) => Message::AccessTokenFetchFailed(e.to_string()),
                             }
                         });
@@ -159,7 +159,7 @@ impl Application for Deskodon {
             }
             UrlOpened => iced::Command::none(),
             UrlOpenFailed(_) => iced::Command::none(),
-            AccessTokenFetched(token) => {
+            AccessTokenFetched(auth, token) => {
                 if let Deskodon::EnterAuthToken { config, .. } = self {
                     config.set_auth_token(token.as_ref().to_string());
                     let config_clone = config.clone();
@@ -172,7 +172,7 @@ impl Application for Deskodon {
                         });
 
                     *self = Deskodon::DefaultView {
-                        access_token: token,
+                        mastodon: crate::mastodon::Mastodon::new(auth.url, token),
                     };
 
                     save_config
@@ -274,7 +274,7 @@ impl Application for Deskodon {
                     .into()
             }
 
-            Deskodon::DefaultView { access_token } => {
+            Deskodon::DefaultView { mastodon } => {
                 unimplemented!()
             }
         }

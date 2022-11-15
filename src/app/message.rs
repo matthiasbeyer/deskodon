@@ -19,7 +19,7 @@ pub enum Message {
     UrlOpened,
     UrlOpenFailed(String),
 
-    AccessTokenFetched(crate::mastodon::AccessToken),
+    AccessTokenFetched(crate::mastodon::Auth, crate::mastodon::AccessToken),
     AccessTokenFetchFailed(String),
 
     LoggedIn,
