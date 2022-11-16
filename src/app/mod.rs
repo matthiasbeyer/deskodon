@@ -1,5 +1,6 @@
 use iced::Application;
 
+mod column;
 mod deskodon;
 mod message;
 mod toot;
