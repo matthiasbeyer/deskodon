@@ -1,3 +1,5 @@
+use megalodon::entities::Status;
+
 #[derive(Debug, Clone)]
 pub enum Message {
     ConfigLoaded(crate::config::Config),
@@ -21,6 +23,9 @@ pub enum Message {
 
     AccessTokenFetched(crate::mastodon::Auth, crate::mastodon::AccessToken),
     AccessTokenFetchFailed(String),
+
+    TimelineStatuses(Vec<Status>),
+    GetTimelineFailed(String),
 
     LoggedIn,
     LoginFailed(String),

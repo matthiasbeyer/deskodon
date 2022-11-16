@@ -1,9 +1,9 @@
 use iced::{
     widget::{text, text_input, Button, Column, Container},
-    Application, Length, Theme,
+    Application, Length, Subscription, Theme,
 };
 
-use crate::app::message::Message;
+use crate::app::{column::TootColumn, message::Message, toot::Toot};
 use crate::config::Config;
 
 #[derive(Debug)]
@@ -11,15 +11,23 @@ use crate::config::Config;
 pub(crate) enum Deskodon {
     ConfigLoading,
 
-    ConfigLoaded { config: Config },
+    ConfigLoaded {
+        config: Config,
+    },
 
-    ConfigLoadingFailed { err: String },
+    ConfigLoadingFailed {
+        err: String,
+    },
 
-    EnterAuthToken { config: Config, auth: crate::mastodon::Auth },
+    EnterAuthToken {
+        config: Config,
+        auth: crate::mastodon::Auth,
+    },
 
     DefaultView {
         mastodon: crate::mastodon::Mastodon,
-    }
+        column: TootColumn,
+    },
 }
 
 impl Application for Deskodon {
@@ -105,21 +113,18 @@ impl Application for Deskodon {
                             }
                         });
 
-                    *self = Deskodon::EnterAuthToken { config: config.clone(), auth };
+                    *self = Deskodon::EnterAuthToken {
+                        config: config.clone(),
+                        auth,
+                    };
                     iced::Command::batch(vec![save_config, open_browser])
                 } else {
                     iced::Command::none()
                 }
             }
-            SavingConfigSucceeded => {
-                iced::Command::none()
-            }
-            SavingConfigFailed(_) => {
-                iced::Command::none()
-            }
-            GeneratedAuthFailed(_) => {
-                iced::Command::none()
-            }
+            SavingConfigSucceeded => iced::Command::none(),
+            SavingConfigFailed(_) => iced::Command::none(),
+            GeneratedAuthFailed(_) => iced::Command::none(),
             AccessTokenInputChanged(s) => {
                 if let Deskodon::EnterAuthToken { config, .. } = self {
                     config.set_auth_token(s);
@@ -144,13 +149,18 @@ impl Application for Deskodon {
                     let client_id = config.client_id().unwrap().to_string();
                     let client_secret = config.client_secret().unwrap().to_string();
 
-                    let fetch_access_token =
-                        iced::Command::perform(crate::mastodon::fetch_access_token(instance, client_id, client_secret, auth_token), |result| {
-                            match result {
-                                Ok(token) => Message::AccessTokenFetched(auth, token),
-                                Err(e) => Message::AccessTokenFetchFailed(e.to_string()),
-                            }
-                        });
+                    let fetch_access_token = iced::Command::perform(
+                        crate::mastodon::fetch_access_token(
+                            instance,
+                            client_id,
+                            client_secret,
+                            auth_token,
+                        ),
+                        |result| match result {
+                            Ok(token) => Message::AccessTokenFetched(auth, token),
+                            Err(e) => Message::AccessTokenFetchFailed(e.to_string()),
+                        },
+                    );
 
                     iced::Command::batch(vec![save_config, fetch_access_token])
                 } else {
@@ -173,15 +183,22 @@ impl Application for Deskodon {
 
                     *self = Deskodon::DefaultView {
                         mastodon: crate::mastodon::Mastodon::new(auth.url, token),
+                        column: TootColumn::new("Default".to_string()),
                     };
 
                     save_config
                 } else {
                     iced::Command::none()
                 }
-
-            },
+            }
             AccessTokenFetchFailed(_) => iced::Command::none(),
+            TimelineStatuses(statuses) => {
+                if let Deskodon::DefaultView { column, .. } = self {
+                    column.update(statuses.into_iter().map(Toot::from).collect());
+                }
+                iced::Command::none()
+            },
+            GetTimelineFailed(_) => iced::Command::none(),
             LoggedIn => iced::Command::none(),
             LoginFailed(_) => iced::Command::none(),
             None => iced::Command::none(),
@@ -211,7 +228,8 @@ impl Application for Deskodon {
                     Message::InstanceInputChanged(s)
                 });
 
-                let login = Button::new("Login").on_press(Message::GenerateAccessTokenButtonPressed);
+                let login =
+                    Button::new("Login").on_press(Message::GenerateAccessTokenButtonPressed);
 
                 let content = Column::new()
                     .spacing(20)
@@ -246,18 +264,21 @@ impl Application for Deskodon {
                 // unfortunately we need this, as xdg-open in KDE downloads the website as html
                 // file and opens that instead of opening the url.
                 // Maybe misconfig on my side...
-                let url = text_input(auth.url.as_ref(), auth.url.as_ref(), |_: String| -> Message {
-                    Message::None
-                })
-                    .size(12)
-                    .width(iced::Length::Fill);
+                let url = text_input(
+                    auth.url.as_ref(),
+                    auth.url.as_ref(),
+                    |_: String| -> Message { Message::None },
+                )
+                .size(12)
+                .width(iced::Length::Fill);
                 let token = config.auth_token().unwrap_or_default();
 
                 let token_input = text_input("", &token, |s: String| -> Message {
                     Message::AccessTokenInputChanged(s)
                 });
 
-                let login = Button::new("Login").on_press(Message::LoginButtonPressed(auth.clone(), token.to_string()));
+                let login = Button::new("Login")
+                    .on_press(Message::LoginButtonPressed(auth.clone(), token.to_string()));
 
                 let content = Column::new()
                     .spacing(20)
@@ -274,9 +295,27 @@ impl Application for Deskodon {
                     .into()
             }
 
-            Deskodon::DefaultView { mastodon } => {
-                unimplemented!()
+            Deskodon::DefaultView { column, .. } => {
+                column.view()
             }
+        }
+    }
+
+    fn subscription(&self) -> Subscription<Message> {
+        use futures::FutureExt;
+
+        if let Deskodon::DefaultView { mastodon, .. } = self {
+            let m = mastodon.clone();
+
+            iced_native::subscription::run(0 /* TODO */, futures::stream::once(async move {
+                m.get_home_timeline().map(|res| match res {
+                    Ok(status) => Message::TimelineStatuses(status),
+                    Err(e) => Message::GetTimelineFailed(e),
+                })
+                .await
+            }))
+        } else {
+            Subscription::none()
         }
     }
 }

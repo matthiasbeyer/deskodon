@@ -1,9 +1,15 @@
+use std::sync::Arc;
+
+use futures::FutureExt;
+use megalodon::{entities::Status, Megalodon};
+
 use super::AccessToken;
 
 const USER_AGENT: &str = "deskodon";
 
+#[derive(Clone)]
 pub struct Mastodon {
-    mastodon: megalodon::mastodon::Mastodon,
+    mastodon: Arc<megalodon::mastodon::Mastodon>,
 }
 
 impl Mastodon {
@@ -14,7 +20,25 @@ impl Mastodon {
             Some(USER_AGENT.to_string()),
         );
 
-        Self { mastodon }
+        Self { mastodon: Arc::new(mastodon) }
+    }
+
+    pub async fn get_home_timeline(&self) -> Result<Vec<Status>, String /* TODO */> {
+        let options = megalodon::megalodon::GetHomeTimelineInputOptions {
+            only_media: Some(false),
+            limit: Some(10),
+            max_id: None,
+            since_id: None,
+            min_id: None,
+            local: Some(true),
+        };
+
+        self.mastodon.get_home_timeline(Some(&options))
+            .map(|res| match res {
+                Ok(response) => Ok(response.json),
+                Err(e) => Err(e.to_string()),
+            })
+            .await
     }
 }
 

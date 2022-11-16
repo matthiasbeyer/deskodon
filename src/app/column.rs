@@ -29,7 +29,7 @@ impl TootColumn {
         self.items = items;
     }
 
-    fn view(&self) -> iced::Element<Message> {
+    pub fn view(&self) -> iced::Element<Message> {
         let col_name = text(self.name.to_string());
         let header = Row::new().spacing(20).push(col_name);
 
