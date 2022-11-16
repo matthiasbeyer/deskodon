@@ -2,6 +2,7 @@ use iced::Application;
 
 mod deskodon;
 mod message;
+mod toot;
 
 use self::deskodon::Deskodon;
 
