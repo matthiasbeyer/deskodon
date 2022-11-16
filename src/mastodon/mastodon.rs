@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use futures::FutureExt;
 use megalodon::{entities::Status, Megalodon};
+use tracing::{info_span, Instrument};
 
 use super::AccessToken;
 
@@ -23,6 +24,7 @@ impl Mastodon {
         Self { mastodon: Arc::new(mastodon) }
     }
 
+    #[tracing::instrument]
     pub async fn get_home_timeline(&self) -> Result<Vec<Status>, String /* TODO */> {
         let options = megalodon::megalodon::GetHomeTimelineInputOptions {
             only_media: Some(false),
@@ -38,6 +40,7 @@ impl Mastodon {
                 Ok(response) => Ok(response.json),
                 Err(e) => Err(e.to_string()),
             })
+            .instrument(info_span!("Fetched toots"))
             .await
     }
 }

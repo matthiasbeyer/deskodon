@@ -2,6 +2,7 @@ use iced::{
     widget::{text, text_input, Button, Column, Container},
     Application, Length, Subscription, Theme,
 };
+use tracing::{Instrument, info_span};
 
 use crate::app::{column::TootColumn, message::Message, toot::Toot};
 use crate::config::Config;
@@ -312,6 +313,7 @@ impl Application for Deskodon {
                     Ok(status) => Message::TimelineStatuses(status),
                     Err(e) => Message::GetTimelineFailed(e),
                 })
+                .instrument(info_span!("Getting Home timeline"))
                 .await
             }))
         } else {

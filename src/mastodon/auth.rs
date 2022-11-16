@@ -1,6 +1,6 @@
 use futures::FutureExt;
 use megalodon::Megalodon;
-use tracing::{Instrument, trace_span};
+use tracing::{Instrument, info_span};
 
 #[derive(Debug, Clone)]
 pub struct Auth {
@@ -38,7 +38,7 @@ pub async fn generate_auth(instance: String) -> Result<Auth, String> {
                 })
             })
         })
-        .instrument(trace_span!("app registration"))
+        .instrument(info_span!("app registration"))
         .await;
     tracing::trace!(?reg, "App registration done");
     reg

@@ -3,7 +3,7 @@ use miette::Error;
 use miette::IntoDiagnostic;
 use tokio::io::AsyncWriteExt;
 use tracing::Instrument;
-use tracing::debug_span;
+use tracing::info_span;
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Config {
@@ -88,6 +88,7 @@ impl Config {
         }
 
         let config = tokio::fs::read_to_string(config_path)
+            .instrument(info_span!("Reading config file"))
             .await
             .into_diagnostic()
             .context("Reading configuration file")?;
@@ -111,18 +112,21 @@ impl Config {
             .context("Generating configuration file")?;
 
         let mut config_file = tokio::fs::File::open(config_path)
+            .instrument(info_span!("Opening file"))
             .await
             .into_diagnostic()
             .context("Opening configuration file for writing")?;
 
         config_file
             .write_all(str.as_bytes())
+            .instrument(info_span!("Writing config file"))
             .await
             .into_diagnostic()
             .context("Writing configuration file")?;
 
         config_file
             .sync_all()
+            .instrument(info_span!("Flushing config file"))
             .await
             .into_diagnostic()
             .context("Flushing configuration file")
@@ -130,20 +134,22 @@ impl Config {
     }
 }
 
+#[tracing::instrument]
 pub async fn save(config: Config) -> Result<(), miette::Error> {
     let xdg = xdg::BaseDirectories::with_prefix("deskodon").into_diagnostic()?;
     config
         .save(&xdg)
-        .instrument(debug_span!("Saving configuration"))
+        .instrument(info_span!("Saving configuration"))
         .await
         .map_err(miette::Error::from)
 }
 
+#[tracing::instrument]
 pub async fn load() -> Result<Config, miette::Error> {
     let xdg = xdg::BaseDirectories::with_prefix("deskodon").into_diagnostic()?;
 
     let config = Config::load_xdg(&xdg)
-        .instrument(debug_span!("Loading configuration"))
+        .instrument(info_span!("Loading configuration"))
         .await?
         .unwrap_or_else(|| Config::empty());
 
