@@ -323,19 +323,25 @@ impl Application for Deskodon {
     fn subscription(&self) -> Subscription<Message> {
         use futures::FutureExt;
 
-        if let Deskodon::DefaultView { mastodon, .. } = self {
+        let subs = if let Deskodon::DefaultView { mastodon, .. } = self {
             let m = mastodon.clone();
 
-            iced_native::subscription::run(0 /* TODO */, futures::stream::once(async move {
-                m.get_home_timeline().map(|res| match res {
-                    Ok(status) => Message::TimelineStatuses(status),
-                    Err(e) => Message::GetTimelineFailed(e),
-                })
-                .instrument(info_span!("Getting Home timeline"))
-                .await
-            }))
+            vec![iced_native::subscription::run(
+                0,
+                futures::stream::once(async move {
+                    m.get_home_timeline()
+                        .map(|res| match res {
+                            Ok(status) => Message::TimelineStatuses(status),
+                            Err(e) => Message::GetTimelineFailed(e),
+                        })
+                        .instrument(info_span!("Getting Home timeline"))
+                        .await
+                }),
+            )]
         } else {
-            Subscription::none()
-        }
+            vec![]
+        };
+
+        iced_native::subscription::Subscription::batch(subs)
     }
 }
