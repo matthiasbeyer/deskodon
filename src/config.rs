@@ -111,12 +111,14 @@ impl Config {
             .into_diagnostic()
             .context("Generating configuration file")?;
 
+        tracing::trace!("Serialized");
         let mut config_file = tokio::fs::File::open(config_path)
             .instrument(info_span!("Opening file"))
             .await
             .into_diagnostic()
             .context("Opening configuration file for writing")?;
 
+        tracing::trace!("File opened");
         config_file
             .write_all(str.as_bytes())
             .instrument(info_span!("Writing config file"))
@@ -124,6 +126,7 @@ impl Config {
             .into_diagnostic()
             .context("Writing configuration file")?;
 
+        tracing::trace!("File written");
         config_file
             .sync_all()
             .instrument(info_span!("Flushing config file"))

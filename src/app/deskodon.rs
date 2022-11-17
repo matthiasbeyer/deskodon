@@ -2,7 +2,7 @@ use iced::{
     widget::{text, text_input, Button, Column, Container},
     Application, Length, Subscription, Theme,
 };
-use tracing::{Instrument, info_span};
+use tracing::{info_span, Instrument};
 
 use crate::app::{column::TootColumn, message::Message, toot::Toot};
 use crate::config::Config;
@@ -95,6 +95,7 @@ impl Application for Deskodon {
                     config.set_client_id(auth.client_id.to_string());
                     config.set_client_secret(auth.client_secret.to_string());
 
+                    tracing::trace!(?config, "Dispatch save-config job");
                     let config_clone = config.clone();
                     let save_config =
                         iced::Command::perform(crate::config::save(config_clone), |result| {
@@ -136,9 +137,11 @@ impl Application for Deskodon {
             LoginButtonPressed(auth, auth_token) => {
                 if let Deskodon::EnterAuthToken { config, .. } = self {
                     config.set_auth_token(auth_token.clone());
+                    tracing::trace!(?config, "Dispatch save-config job");
                     let config_clone = config.clone();
                     let save_config =
                         iced::Command::perform(crate::config::save(config_clone), |result| {
+                            tracing::trace!(?result, "Saving configuration");
                             match result {
                                 Ok(_) => Message::SavingConfigSucceeded,
                                 Err(e) => Message::SavingConfigFailed(e.to_string()),
@@ -173,9 +176,11 @@ impl Application for Deskodon {
             AccessTokenFetched(auth, token) => {
                 if let Deskodon::EnterAuthToken { config, .. } = self {
                     config.set_auth_token(token.as_ref().to_string());
+                    tracing::trace!(?config, "Dispatch save-config job");
                     let config_clone = config.clone();
                     let save_config =
                         iced::Command::perform(crate::config::save(config_clone), |result| {
+                            tracing::trace!(?result, "Saving configuration");
                             match result {
                                 Ok(_) => Message::SavingConfigSucceeded,
                                 Err(e) => Message::SavingConfigFailed(e.to_string()),
@@ -198,7 +203,7 @@ impl Application for Deskodon {
                     column.update(statuses.into_iter().map(Toot::from).collect());
                 }
                 iced::Command::none()
-            },
+            }
             GetTimelineFailed(_) => iced::Command::none(),
             LoggedIn => iced::Command::none(),
             LoginFailed(_) => iced::Command::none(),
