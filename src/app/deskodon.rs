@@ -56,7 +56,20 @@ impl Application for Deskodon {
 
         match message {
             ConfigLoaded(config) => {
-                *self = Deskodon::ConfigLoaded { config };
+                match (config.instance(), config.access_token()) {
+                    (Some(instance), Some(access_token)) => {
+                        *self = Deskodon::DefaultView {
+                            mastodon: crate::mastodon::Mastodon::new(
+                                instance.parse().unwrap(), // TODO
+                                crate::mastodon::AccessToken::from(access_token.to_string()),
+                            ),
+                            column: TootColumn::new("Default".to_string()),
+                        }
+                    }
+                    _ => {
+                        *self = Deskodon::ConfigLoaded { config };
+                    }
+                }
                 iced::Command::none()
             }
             ConfigLoadingFailed(err) => {
