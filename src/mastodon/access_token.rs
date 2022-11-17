@@ -10,6 +10,12 @@ impl AsRef<str> for AccessToken {
     }
 }
 
+impl From<String> for AccessToken {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
 
 #[tracing::instrument(skip_all)]
 pub async fn fetch_access_token(
