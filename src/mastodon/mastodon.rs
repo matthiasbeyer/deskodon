@@ -35,13 +35,16 @@ impl Mastodon {
             local: Some(true),
         };
 
-        self.mastodon.get_home_timeline(Some(&options))
+        tracing::trace!("Fetching home timeline");
+        let tl = self.mastodon.get_home_timeline(Some(&options))
             .map(|res| match res {
                 Ok(response) => Ok(response.json),
                 Err(e) => Err(e.to_string()),
             })
             .instrument(info_span!("Fetched toots"))
-            .await
+            .await;
+        tracing::trace!("Finished fetching home timeline: {:?}", tl);
+        tl
     }
 }
 

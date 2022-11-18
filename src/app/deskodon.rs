@@ -215,6 +215,7 @@ impl Application for Deskodon {
             }
             AccessTokenFetchFailed(_) => iced::Command::none(),
             TimelineStatuses(statuses) => {
+                tracing::debug!("{} new statuses!", statuses.len());
                 if let Deskodon::DefaultView { column, .. } = self {
                     column.update(statuses.into_iter().map(Toot::from).collect());
                 }
