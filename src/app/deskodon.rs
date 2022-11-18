@@ -200,10 +200,13 @@ impl Application for Deskodon {
                             }
                         });
 
-                    *self = Deskodon::DefaultView {
-                        mastodon: crate::mastodon::Mastodon::new(auth.url, token),
-                        column: TootColumn::new("Default".to_string()),
-                    };
+                    if let Some(instance) = config.instance() {
+                        let instance = instance.parse().unwrap(); // TODO
+                        *self = Deskodon::DefaultView {
+                            mastodon: crate::mastodon::Mastodon::new(instance, token),
+                            column: TootColumn::new("Default".to_string()),
+                        };
+                    }
 
                     save_config
                 } else {
