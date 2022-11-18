@@ -29,7 +29,10 @@ impl TootColumn {
         self.items = items;
     }
 
+    #[tracing::instrument]
     pub fn view(&self) -> iced::Element<Message> {
+        tracing::trace!("{} column with {} elements", self.name, self.items.len());
+
         let col_name = text(self.name.to_string());
         let header = Row::new().spacing(20).push(col_name);
 

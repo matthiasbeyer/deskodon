@@ -40,3 +40,8 @@ features = ["wgpu", "tokio", "debug"]
 version = "0.6.1"
 default-features = false
 
+
+[dependencies.iced_style]
+version = "0.5.0"
+default-features = false
+

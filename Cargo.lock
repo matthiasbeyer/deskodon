@@ -642,6 +642,7 @@ dependencies = [
  "getset",
  "iced",
  "iced_native",
+ "iced_style",
  "megalodon",
  "miette",
  "open",

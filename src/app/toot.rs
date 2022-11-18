@@ -1,18 +1,9 @@
-use std::alloc::Layout;
 use std::sync::Arc;
 
-use iced::{Point, Rectangle};
-use iced::widget::{text, Column};
-use iced::{
-    alignment::{Horizontal, Vertical},
-    widget::Container,
-    widget::Row,
-    Length,
-};
-use iced_native::{renderer, renderer::Renderer};
+use iced::widget::{Text, Row};
+use iced::{Point, Rectangle, Color, Background};
+use iced_native::renderer;
 use megalodon::entities::status::Status;
-
-use super::message::Message;
 
 #[derive(Clone, Debug)]
 pub struct Toot {
@@ -27,66 +18,54 @@ impl From<Status> for Toot {
     }
 }
 
-impl Toot {
-    pub fn update(&mut self, _message: Message) -> iced::Command<Message> {
-        iced::Command::none()
+impl<M, R> iced_native::widget::Widget<M, R> for Toot
+where
+    R: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    R::Theme: iced_style::text::StyleSheet,
+{
+    fn width(&self) -> iced_native::Length {
+        iced_native::Length::Fill
     }
 
-    fn view(&self) -> iced::Element<Message> {
-        let account_name = text(self.status.account.username.to_string());
-        let created_at = text(self.status.created_at.to_string());
-        let status_text = text(self.status.content.to_string());
-        let replies_count = text(self.status.replies_count.to_string());
-        let reblogs_count = text(self.status.reblogs_count.to_string());
+    fn height(&self) -> iced_native::Length {
+        iced_native::Length::Fill
+    }
 
-        let header = Row::new().spacing(20).push(account_name).push(created_at);
+    fn layout(
+        &self,
+        renderer: &R,
+        limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
+        let header = Row::<'_, M, R>::new()
+            .spacing(20)
+            .push(Text::new(self.status.account.username.to_string()))
+            .push(Text::new(
+                self.status
+                    .reblog
+                    .is_some()
+                    .then(|| "Reblog")
+                    .unwrap_or("Original"),
+            ))
+            .push(Text::new(self.status.created_at.to_string()));
 
-        let content = Row::new().spacing(20).push(status_text);
+        let content = iced_native::widget::Row::new()
+            .spacing(20)
+            .push(Text::new(self.status.content.to_string()));
+
+        let replies_count = Text::new(self.status.replies_count.to_string());
+        let reblogs_count = Text::new(self.status.reblogs_count.to_string());
 
         let footer = Row::new()
             .spacing(20)
             .push(replies_count)
             .push(reblogs_count);
 
-        let column = Column::new()
+        iced_native::widget::Column::new()
             .spacing(20)
             .push(header)
             .push(content)
-            .push(footer);
-
-        Container::new(column)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .align_x(Horizontal::Center)
-            .align_y(Vertical::Center)
-            .into()
-    }
-}
-
-impl<M, R> iced_native::widget::Widget<M, R> for Toot
-    where R: Renderer,
-{
-    fn width(&self) -> iced_native::Length {
-        iced_native::Length::Shrink
-    }
-
-    fn height(&self) -> iced_native::Length {
-        iced_native::Length::Shrink
-    }
-
-    fn layout(
-        &self,
-        _renderer: &R,
-        _limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
-        iced_native::layout::Node::new({
-            let width = self.status.account.username.len()
-                + self.status.account.created_at.to_string().len();
-            let width = f32::from(width as u16);
-            let height = 5.0; // TODO
-                              //
-            iced_native::Size::new(width, height)
-        })
+            .push(footer)
+            .layout(renderer, limits)
     }
 
     fn draw(
@@ -97,16 +76,20 @@ impl<M, R> iced_native::widget::Widget<M, R> for Toot
         _style: &renderer::Style,
         layout: iced_native::Layout,
         _cursor_position: Point,
-        _viewport: &Rectangle
+        _viewport: &Rectangle,
     ) {
+        let bounds = layout.bounds();
+        // let children = layout.children();
+        // let is_mouse_over = bounds.contains(cursor_position);
+
         renderer.fill_quad(
             renderer::Quad {
-                bounds: layout.bounds(),
-                border_radius: 0.5,
-                border_width: 0.5,
-                border_color: iced_native::Color::TRANSPARENT,
+                bounds,
+                border_radius: 0.0,
+                border_width: 1.0,
+                border_color: Color::TRANSPARENT,
             },
-            iced_native::Color::TRANSPARENT
+            Background::Color(Color::TRANSPARENT),
         );
     }
 
