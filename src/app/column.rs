@@ -30,7 +30,7 @@ impl TootColumn {
         self.items = items;
     }
 
-    #[tracing::instrument]
+    #[tracing::instrument(skip(self))]
     pub fn view(&self) -> iced::Element<Message> {
         tracing::trace!("{} column with {} elements", self.name, self.items.len());
 
