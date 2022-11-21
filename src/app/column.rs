@@ -1,6 +1,6 @@
 use crate::app::toot::Toot;
 
-use iced::Element;
+use iced::{Alignment, Padding};
 use iced::widget::{text, Column};
 use iced::{
     alignment::{Horizontal, Vertical},
@@ -8,6 +8,7 @@ use iced::{
     widget::Row,
     Length,
 };
+use iced::widget::scrollable::Scrollable;
 
 use super::message::Message;
 
@@ -41,12 +42,18 @@ impl TootColumn {
                 .iter()
                 .map(Toot::view)
                 .collect()
-        });
+        })
+        .align_items(Alignment::Fill)
+        .padding(Padding::from(1))
+        .spacing(1);
+
+        let content_scrollbar = Scrollable::new(content)
+            .height(Length::Fill);
 
         let column = Column::new()
             .spacing(20)
             .push(header)
-            .push(content);
+            .push(content_scrollbar);
 
         Container::new(column)
             .height(Length::Fill)
