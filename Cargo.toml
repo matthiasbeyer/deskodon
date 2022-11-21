@@ -22,6 +22,7 @@ getset = "0.1"
 megalodon = "0.2"
 miette = { version = "5.4", features = [ "fancy" ] }
 open = "3.0"
+scraper = "0.13"
 serde = { version = "1", features = [ "derive" ] }
 tokio = { version = "1", features = ["rt", "macros", "fs"] }
 toml = "0.5"
