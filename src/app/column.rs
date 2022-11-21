@@ -39,8 +39,7 @@ impl TootColumn {
         let content = Column::with_children({
             self.items
                 .iter()
-                .map(Toot::clone)
-                .map(|t| Element::new(t))
+                .map(Toot::view)
                 .collect()
         });
 

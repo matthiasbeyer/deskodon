@@ -137,9 +137,18 @@ impl Application for Deskodon {
                     iced::Command::none()
                 }
             }
-            SavingConfigSucceeded => iced::Command::none(),
-            SavingConfigFailed(_) => iced::Command::none(),
-            GeneratedAuthFailed(_) => iced::Command::none(),
+            SavingConfigSucceeded => {
+                tracing::error!("Saving configuration succeeded");
+                iced::Command::none()
+            }
+            SavingConfigFailed(e) => {
+                tracing::error!("Saving configuration failed: {:?}", e);
+                iced::Command::none()
+            }
+            GeneratedAuthFailed(e) => {
+                tracing::error!("Generating Auth failed: {:?}", e);
+                iced::Command::none()
+            }
             AccessTokenInputChanged(s) => {
                 if let Deskodon::EnterAuthToken { config, .. } = self {
                     config.set_auth_token(s);
@@ -221,9 +230,18 @@ impl Application for Deskodon {
                 }
                 iced::Command::none()
             }
-            GetTimelineFailed(_) => iced::Command::none(),
-            LoggedIn => iced::Command::none(),
-            LoginFailed(_) => iced::Command::none(),
+            GetTimelineFailed(e) => {
+                tracing::error!("Getting timeline failed: {:?}", e);
+                iced::Command::none()
+            }
+            LoggedIn => {
+                tracing::error!("Logged in");
+                iced::Command::none()
+            }
+            LoginFailed(e) => {
+                tracing::error!("Login failed: {:?}", e);
+                iced::Command::none()
+            }
             None => iced::Command::none(),
         }
     }
