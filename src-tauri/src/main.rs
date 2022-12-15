@@ -6,9 +6,13 @@
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 
 mod login;
+mod state;
 
 fn main() {
+    let app_state = crate::state::State::default();
+
     tauri::Builder::default()
+        .manage(app_state)
         .plugin(
             LoggerBuilder::default()
                 .targets([LogTarget::Stdout])
