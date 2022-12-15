@@ -75,6 +75,7 @@
           zlib
           pkg-config
           gobject-introspection
+          glib-networking
         ]) ++ (with pkgs.xorg; [
           libX11
           libXcomposite
