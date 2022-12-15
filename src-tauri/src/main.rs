@@ -4,6 +4,7 @@
 )]
 
 mod browser;
+use deskodon_types::login::LoginHandle;
 
 fn main() {
     tauri::Builder::default()
