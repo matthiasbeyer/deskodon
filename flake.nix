@@ -116,11 +116,35 @@
             filter = filterPath;
           };
 
+        deskodonFrontendArtifacts = craneLib.buildDepsOnly {
+          pname = "deskodon-frontend";
+          inherit src;
+
+          doCheck = false;
+          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
+        };
+
         deskodonArtifacts = craneLib.buildDepsOnly {
           inherit (tomlInfo) pname;
           inherit src;
           inherit nativeBuildInputs;
           buildInputs = guiBuildInputs;
+        };
+
+        deskodon-frontend = craneLib.buildPackage {
+          inherit (tomlInfo) version;
+          inherit src;
+          inherit nativeBuildInputs;
+          pname = "deskodon-frontend";
+
+          # Override crane's use of --workspace, which tries to build everything.
+          cargoCheckCommand = "cargo check --release";
+          cargoBuildCommand = "cargo build --release";
+          cargoTestCommand = "cargo test --profile release -p deskodon-frontend --lib";
+
+          doCheck = false;
+          cargoArtifacts = deskodonFrontendArtifacts;
+          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
         };
 
         deskodon = craneLib.buildPackage {
@@ -136,6 +160,7 @@
       rec {
         checks = {
           inherit deskodon;
+          inherit deskodon-frontend;
 
           deskodon-clippy = craneLib.cargoClippy {
             inherit (tomlInfo) pname;
@@ -152,6 +177,7 @@
 
         packages = {
           inherit deskodon;
+          inherit deskodon-frontend;
           default = packages.deskodon;
         };
 
