@@ -1,13 +1,14 @@
 {
   description = "The deskodon app";
   inputs = {
-    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "nixpkgs/nixos-22.05";
+    unstable-nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils = {
       url = "github:numtide/flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     crane = {
-      url = "github:matthiasbeyer/crane/0.8.0-master-fix-use-unsafe";
+      url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     rust-overlay = {
@@ -19,7 +20,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, crane, flake-utils, rust-overlay, ... }:
+  outputs = { self, nixpkgs, crane, flake-utils, rust-overlay, unstable-nixpkgs, ... }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
         pkgs = import nixpkgs {
@@ -27,118 +28,121 @@
           overlays = [ (import rust-overlay) ];
         };
 
-        buildInputs = with pkgs; [
-          cmake
-          expat
-          fontconfig
-          freetype
-          freetype.dev
-          libGL
-          libxkbcommon
-          openssl
-          pkgconfig
-          xorg.libX11
-          xorg.libXcomposite
-          xorg.libXcursor
-          xorg.libXext
-          xorg.libXfont
-          xorg.libXfont2
-          xorg.libXft
-          xorg.libXi
-          xorg.libXinerama
-          xorg.libXmu
-          xorg.libXpm
-          xorg.libXpresent
-          xorg.libXrandr
-          xorg.libXrender
-          xorg.libXt
-          xorg.libXtst
-          xorg.libXxf86misc
-          xorg.libXxf86vm
-          xorg.libxcb
-          xorg.libxkbfile
-          xorg.libxshmfence
-          mesa
-        ];
+        unstable = import unstable-nixpkgs {
+          inherit system;
+        };
 
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
-
+        unstableRustTarget = pkgs.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
+          extensions = [ "rust-src" "miri" ];
+        });
         craneLib = (crane.mkLib pkgs).overrideToolchain rustTarget;
 
         tomlInfo = craneLib.crateNameFromCargoToml { cargoToml = ./Cargo.toml; };
-        inherit (tomlInfo) version;
-        pname = "deskodon";
 
-        src =
-          let
-            markdownFilter = path: _type: pkgs.lib.hasSuffix ".md" path;
-            filterPath = path: type: builtins.any (f: f path type) [
-              markdownFilter
-              craneLib.filterCargoSources
-              pkgs.lib.cleanSourceFilter
-            ];
-          in
-          pkgs.lib.cleanSourceWith {
-            src = ./.;
-            filter = filterPath;
-          };
+        nativeBuildPkgs = with pkgs; [
+          curl
+          gcc
+          openssl
+          pkgconfig
+          which
+          zlib
 
-        cargoArtifacts = craneLib.buildDepsOnly {
-          inherit src pname;
-          inherit buildInputs;
-        };
+          freetype
+          expat
+          protobuf
+        ];
 
-        deskodon = craneLib.buildPackage {
-          inherit cargoArtifacts src pname version;
-          cargoExtraArgs = "--all-features";
-          inherit buildInputs;
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-            gtk-layer-shell
-            gtk3
-          ];
+        guiBuildInputs = (with pkgs; [
+          alejandra
+          appimagekit
+          atk
+          cairo
+          dbus.lib
+          dbus
+          dprint
+          gdk-pixbuf
+          glib.out
+          gtk3
+          harfbuzz
+          libsoup
+          nodejs-16_x
+          openssl.out
+          pango
+          pkg-config
+          treefmt
+          webkitgtk
+          zlib
+          pkg-config
+        ]) ++ (with pkgs.xorg; [
+          libX11
+          libXcomposite
+          libXcursor
+          libXext
+          libXfont
+          libXfont2
+          libXft
+          libXi
+          libXinerama
+          libXmu
+          libXpm
+          libXpresent
+          libXrandr
+          libXrender
+          libXt
+          libXtst
+          libXxf86misc
+          libXxf86vm
+          libxcb
+          libxkbfile
+          libxshmfence
 
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
-        };
-
-        cargo-check-everything = pkgs.writeScriptBin "cargo-check-everything" ''
-          #!${pkgs.runtimeShell}
-          ${rustTarget}/bin/cargo check --all --tests --examples --benches
-        '';
-
+          pkgs.libGL
+          pkgs.pkgconfig
+        ]);
       in
       rec {
-        checks = {
-          inherit deskodon;
-          inherit cargo-check-everything;
-        };
+        devShells = {
+          deskodon = pkgs.mkShell {
+            LIBCLANG_PATH   = "${pkgs.llvmPackages.libclang}/lib";
+            PROTOC          = "${pkgs.protobuf}/bin/protoc";
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath guiBuildInputs;
 
-        packages.deskodon = deskodon;
-        packages.default = packages.deskodon;
+            XDG_DATA_DIRS = let
+              base = pkgs.lib.concatMapStringsSep ":" (x: "${x}/share") [
+                pkgs.gnome.adwaita-icon-theme
+                pkgs.shared-mime-info
+              ];
 
-        apps.deskodon = flake-utils.lib.mkApp {
-          name = "deskodon";
-          drv = deskodon;
-        };
-        apps.default = apps.deskodon;
+              gsettings_schema = pkgs.lib.concatMapStringsSep ":" (x: "${x}/share/gsettings-schemas/${x.name}") [
+                pkgs.glib
+                pkgs.gsettings-desktop-schemas
+                pkgs.gtk3
+              ];
+            in "${base}:${gsettings_schema}";
 
-        devShells.default = devShells.deskodon;
-        devShells.deskodon = pkgs.mkShell {
-          inherit buildInputs;
+            buildInputs = nativeBuildPkgs ++ guiBuildInputs;
 
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+            nativeBuildInputs = nativeBuildPkgs ++ [
+              rustTarget
+              unstable.cargo-tauri
 
-          nativeBuildInputs = with pkgs; [
-            rustTarget
+              pkgs.wasm-bindgen-cli
+              pkgs.cargo-msrv
+              pkgs.cargo-deny
+              pkgs.cargo-expand
+              pkgs.cargo-bloat
+              pkgs.cargo-fuzz
+              pkgs.cargo-outdated
+              pkgs.trunk
 
-            cargo-check-everything
+              pkgs.gitlint
+            ];
+          };
 
-            cargo-deny
-            gitlint
-            pkg-config
-            cmake
-          ];
+          default = devShells.deskodon;
         };
       }
     );
 }
+
