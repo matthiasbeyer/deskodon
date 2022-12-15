@@ -6,7 +6,9 @@
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 
 mod login;
+mod error;
 mod state;
+mod mastodon;
 
 fn main() {
     let app_state = crate::state::State::default();
