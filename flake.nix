@@ -228,7 +228,7 @@
               pkgs.cargo-outdated
               pkgs.trunk
 
-              pkgs.gitlint
+              unstable.gitlint
             ];
           };
 
