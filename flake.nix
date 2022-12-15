@@ -40,7 +40,7 @@
 
         tomlInfo = craneLib.crateNameFromCargoToml { cargoToml = ./Cargo.toml; };
 
-        nativeBuildPkgs = with pkgs; [
+        nativeBuildInputs = with pkgs; [
           curl
           gcc
           openssl
@@ -100,8 +100,68 @@
           pkgs.libGL
           pkgs.pkgconfig
         ]);
+
+        src =
+          let
+            markdownFilter = path: _type: pkgs.lib.hasSuffix ".md" path;
+            filterPath = path: type: builtins.any (f: f path type) [
+              markdownFilter
+              craneLib.filterCargoSources
+              pkgs.lib.cleanSourceFilter
+            ];
+          in
+          pkgs.lib.cleanSourceWith {
+            src = ./.;
+            filter = filterPath;
+          };
+
+        deskodonArtifacts = craneLib.buildDepsOnly {
+          inherit (tomlInfo) pname;
+          inherit src;
+          inherit nativeBuildInputs;
+          buildInputs = guiBuildInputs;
+        };
+
+        deskodon = craneLib.buildPackage {
+          inherit (tomlInfo) pname version;
+          inherit src;
+          inherit nativeBuildInputs;
+
+          cargoArtifacts = deskodonArtifacts;
+          cargoExtraArgs = "--all-features";
+          buildInputs = guiBuildInputs;
+        };
       in
       rec {
+        checks = {
+          inherit deskodon;
+
+          deskodon-clippy = craneLib.cargoClippy {
+            inherit (tomlInfo) pname;
+            inherit src;
+            cargoArtifacts = deskodonArtifacts;
+            cargoClippyExtraArgs = "--tests --all-features -- --deny warnings";
+          };
+
+          deskodon-fmt = craneLib.cargoFmt {
+            inherit (tomlInfo) pname;
+            inherit src;
+          };
+        };
+
+        packages = {
+          inherit deskodon;
+          default = packages.deskodon;
+        };
+
+        apps = {
+          deskodon = flake-utils.lib.mkApp {
+            name = "deskodon";
+            drv = deskodon;
+          };
+          default = apps.deskodon;
+        };
+
         devShells = {
           deskodon = pkgs.mkShell {
             LIBCLANG_PATH   = "${pkgs.llvmPackages.libclang}/lib";
@@ -121,9 +181,9 @@
               ];
             in "${base}:${gsettings_schema}";
 
-            buildInputs = nativeBuildPkgs ++ guiBuildInputs;
+            buildInputs = guiBuildInputs;
 
-            nativeBuildInputs = nativeBuildPkgs ++ [
+            nativeBuildInputs = nativeBuildInputs ++ [
               rustTarget
               unstable.cargo-tauri
 
