@@ -32,6 +32,8 @@
           inherit system;
         };
 
+        cargo-tauri = unstable.callPackage ./nix/cargo-tauri.nix {};
+
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
         unstableRustTarget = pkgs.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
           extensions = [ "rust-src" "miri" ];
@@ -220,7 +222,7 @@
 
             nativeBuildInputs = nativeBuildInputs ++ [
               rustTarget
-              unstable.cargo-tauri
+              cargo-tauri
 
               pkgs.wasm-bindgen-cli
               pkgs.cargo-msrv
