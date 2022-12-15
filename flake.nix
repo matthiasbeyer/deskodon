@@ -74,6 +74,7 @@
           webkitgtk
           zlib
           pkg-config
+          gobject-introspection
         ]) ++ (with pkgs.xorg; [
           libX11
           libXcomposite
