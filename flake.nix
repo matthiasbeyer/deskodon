@@ -165,6 +165,9 @@
           deskodon-clippy = craneLib.cargoClippy {
             inherit (tomlInfo) pname;
             inherit src;
+            inherit nativeBuildInputs;
+            buildInputs = guiBuildInputs;
+
             cargoArtifacts = deskodonArtifacts;
             cargoClippyExtraArgs = "--tests --all-features -- --deny warnings";
           };
@@ -172,6 +175,8 @@
           deskodon-fmt = craneLib.cargoFmt {
             inherit (tomlInfo) pname;
             inherit src;
+            inherit nativeBuildInputs;
+            buildInputs = guiBuildInputs;
           };
         };
 
