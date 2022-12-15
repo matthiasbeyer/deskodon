@@ -75,6 +75,7 @@
           zlib
           pkg-config
           gobject-introspection
+          glib-networking
         ]) ++ (with pkgs.xorg; [
           libX11
           libXcomposite
@@ -212,6 +213,8 @@
                 pkgs.gtk3
               ];
             in "${base}:${gsettings_schema}";
+
+            GIO_MODULE_DIR="${pkgs.glib-networking}/lib/gio/modules/";
 
             buildInputs = guiBuildInputs;
 
