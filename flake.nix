@@ -213,6 +213,8 @@
               ];
             in "${base}:${gsettings_schema}";
 
+            GIO_MODULE_DIR="${pkgs.glib-networking}/lib/gio/modules/";
+
             buildInputs = guiBuildInputs;
 
             nativeBuildInputs = nativeBuildInputs ++ [
