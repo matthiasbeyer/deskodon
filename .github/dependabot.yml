@@ -1,19 +1,10 @@
 version: 2
 updates:
 - package-ecosystem: cargo
-  directory: "/frontend"
+  directory: "/"
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
-  commit-message:
-    prefix: "[frontend]"
-- package-ecosystem: cargo
-  directory: "/src-tauri"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
-  commit-message:
-    prefix: "[src-tauri]"
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
