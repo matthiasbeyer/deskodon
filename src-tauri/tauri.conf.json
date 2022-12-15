@@ -55,10 +55,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 1000,
         "resizable": true,
         "title": "deskodon",
-        "width": 800
+        "width": 1200
       }
     ]
   }
