@@ -40,7 +40,7 @@
 
         tomlInfo = craneLib.crateNameFromCargoToml { cargoToml = ./Cargo.toml; };
 
-        nativeBuildPkgs = with pkgs; [
+        nativeBuildInputs = with pkgs; [
           curl
           gcc
           openssl
@@ -74,6 +74,7 @@
           webkitgtk
           zlib
           pkg-config
+          gobject-introspection
         ]) ++ (with pkgs.xorg; [
           libX11
           libXcomposite
@@ -100,8 +101,99 @@
           pkgs.libGL
           pkgs.pkgconfig
         ]);
+
+        src =
+          let
+            markdownFilter = path: _type: pkgs.lib.hasSuffix ".md" path;
+            filterPath = path: type: builtins.any (f: f path type) [
+              markdownFilter
+              craneLib.filterCargoSources
+              pkgs.lib.cleanSourceFilter
+            ];
+          in
+          pkgs.lib.cleanSourceWith {
+            src = ./.;
+            filter = filterPath;
+          };
+
+        deskodonFrontendArtifacts = craneLib.buildDepsOnly {
+          pname = "deskodon-frontend";
+          inherit src;
+
+          doCheck = false;
+          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
+        };
+
+        deskodonArtifacts = craneLib.buildDepsOnly {
+          inherit (tomlInfo) pname;
+          inherit src;
+          inherit nativeBuildInputs;
+          buildInputs = guiBuildInputs;
+        };
+
+        deskodon-frontend = craneLib.buildPackage {
+          inherit (tomlInfo) version;
+          inherit src;
+          inherit nativeBuildInputs;
+          pname = "deskodon-frontend";
+
+          # Override crane's use of --workspace, which tries to build everything.
+          cargoCheckCommand = "cargo check --release";
+          cargoBuildCommand = "cargo build --release";
+          cargoTestCommand = "cargo test --profile release -p deskodon-frontend --lib";
+
+          doCheck = false;
+          cargoArtifacts = deskodonFrontendArtifacts;
+          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
+        };
+
+        deskodon = craneLib.buildPackage {
+          inherit (tomlInfo) pname version;
+          inherit src;
+          inherit nativeBuildInputs;
+
+          cargoArtifacts = deskodonArtifacts;
+          cargoExtraArgs = "--all-features";
+          buildInputs = guiBuildInputs;
+        };
       in
       rec {
+        checks = {
+          inherit deskodon;
+          inherit deskodon-frontend;
+
+          deskodon-clippy = craneLib.cargoClippy {
+            inherit (tomlInfo) pname;
+            inherit src;
+            inherit nativeBuildInputs;
+            buildInputs = guiBuildInputs;
+
+            cargoArtifacts = deskodonArtifacts;
+            cargoClippyExtraArgs = "--tests --all-features -- --deny warnings";
+          };
+
+          deskodon-fmt = craneLib.cargoFmt {
+            inherit (tomlInfo) pname;
+            inherit src;
+            inherit nativeBuildInputs;
+            buildInputs = guiBuildInputs;
+          };
+        };
+
+        packages = {
+          inherit deskodon;
+          inherit deskodon-frontend;
+          default = packages.deskodon;
+        };
+
+        apps = {
+          deskodon = flake-utils.lib.mkApp {
+            name = "deskodon";
+            drv = deskodon;
+          };
+          default = apps.deskodon;
+        };
+
         devShells = {
           deskodon = pkgs.mkShell {
             LIBCLANG_PATH   = "${pkgs.llvmPackages.libclang}/lib";
@@ -121,9 +213,9 @@
               ];
             in "${base}:${gsettings_schema}";
 
-            buildInputs = nativeBuildPkgs ++ guiBuildInputs;
+            buildInputs = guiBuildInputs;
 
-            nativeBuildInputs = nativeBuildPkgs ++ [
+            nativeBuildInputs = nativeBuildInputs ++ [
               rustTarget
               unstable.cargo-tauri
 
@@ -136,7 +228,7 @@
               pkgs.cargo-outdated
               pkgs.trunk
 
-              pkgs.gitlint
+              unstable.gitlint
             ];
           };
 
