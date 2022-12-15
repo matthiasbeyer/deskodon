@@ -1,7 +1,10 @@
 #[derive(Debug)]
 pub enum Message {
-    StartLoggingIn,
-    LoginSuccess(String),
-    LoginFailed(String),
+    Authenticate,
+    InstanceUrlInvalid(String, String),
+    AuthSuccess(deskodon_types::auth::Auth),
+    AuthErr(String),
+
+    Login,
 }
 

@@ -1,25 +1,25 @@
 use yew::{html, Callback, Component, Context, Html, NodeRef, Properties};
 
-pub struct Login;
+pub struct Auth;
 
 #[derive(Properties, PartialEq)]
-pub struct LoginProbs {
+pub struct AuthProbs {
     pub input_ref: NodeRef,
     pub onclick_login: Callback<()>,
 
-    pub error: Option<String>,
+    pub auth: deskodon_types::auth::Auth,
 }
 
-impl Component for Login {
+impl Component for Auth {
     type Message = ();
-    type Properties = LoginProbs;
+    type Properties = AuthProbs;
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self
     }
 
     fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
-        log::debug!("Login::update()");
+        log::debug!("Auth::update()");
         true
     }
 
@@ -35,7 +35,7 @@ impl Component for Login {
                     <div class="box">
                         <div class="field is-horizontal">
                           <div class="field-label is-normal">
-                            <label class="label">{ "Instance URL" }</label>
+                            <label class="label">{ "Auth Token" }</label>
                           </div>
                           <div class="field-body">
                             <div class="field">
@@ -52,28 +52,17 @@ impl Component for Login {
                             <div class="field">
                               <div class="control">
                                 <button class="button is-primary" onclick={onclick_login}>
-                                  { "Authenticate" }
+                                  { "Login" }
                                 </button>
                               </div>
                             </div>
                           </div>
                         </div>
                     </div>
-
-                    if let Some(err) = ctx.props().error.as_ref() {
-                        <article class="message is-danger">
-                          <div class="message-header">
-                            <p>{ "Error" }</p>
-                            <button class="delete" aria-label="delete"></button>
-                          </div>
-                          <div class="message-body">
-                            { err }
-                          </div>
-                        </article>
-                    }
                 </div>
             </div>
         }
     }
 }
+
 

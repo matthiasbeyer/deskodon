@@ -1,14 +1,20 @@
 use web_sys::HtmlInputElement;
 use yew::{html, Component, Context, Html, NodeRef};
 
-use crate::view::home::Home;
+use deskodon_types::auth::Auth;
+
 use crate::{message::Message, view::login::Login};
 
 #[derive(Debug)]
 pub enum App {
-    Login { input_ref: NodeRef },
-    LoggedIn { name: String },
-    LoginFailed { err: String },
+    Login {
+        input_ref: NodeRef,
+        err: Option<String>,
+    },
+    Auth {
+        input_ref: NodeRef,
+        auth: Auth,
+    },
 }
 
 impl Component for App {
@@ -18,6 +24,7 @@ impl Component for App {
     fn create(_ctx: &Context<Self>) -> Self {
         Self::Login {
             input_ref: NodeRef::default(),
+            err: None,
         }
     }
 
@@ -25,26 +32,31 @@ impl Component for App {
         log::debug!("App::update(): {self:?}, msg => {msg:?}");
 
         match msg {
-            Message::StartLoggingIn => match self {
-                App::Login { input_ref } => {
-                    log::debug!("Login view, logging in now...");
+            Message::Authenticate => match self {
+                App::Login { input_ref, .. } => {
+                    log::debug!("Login view, logging into instance...");
                     if let Some(input) = input_ref.cast::<HtmlInputElement>() {
                         let val = input.value();
-                        log::info!("Logging in: {}", val);
+                        log::info!("Logging into: {}", val);
 
                         ctx.link().send_future(async move {
-                            log::debug!("Calling login({val})");
-                            match crate::tauri::call_login(val).await {
-                                Ok(handle) => {
-                                    log::error!("login() success: '{}'", handle.name());
-                                    Message::LoginSuccess(handle.name().to_string())
+                            log::debug!("Calling generate_auth({val})");
+                            let url = match url::Url::parse(&val).map_err(|e| e.to_string()) {
+                                Ok(url) => url,
+                                Err(e) => return Message::InstanceUrlInvalid(val, e),
+                            };
+
+                            match crate::tauri::call_generate_auth(url).await {
+                                Ok(auth) => {
+                                    log::error!("generate_auth() success");
+                                    Message::AuthSuccess(auth)
                                 }
                                 Err(err) => {
                                     log::error!(
-                                        "Error deserializing reply from login(): '{}'",
+                                        "Error deserializing reply from generate_auth(): '{}'",
                                         err
                                     );
-                                    Message::LoginFailed(err.to_string())
+                                    Message::AuthErr(err.to_string())
                                 }
                             }
                         });
@@ -59,15 +71,35 @@ impl Component for App {
                 }
             },
 
-            Message::LoginSuccess(name) => {
-                log::info!("Login: Success!");
-                *self = App::LoggedIn { name };
+            Message::InstanceUrlInvalid(_url, error) => {
+                let input_ref = NodeRef::default();
+                *self = App::Login {
+                    input_ref,
+                    err: Some(error),
+                };
                 true
             }
 
-            Message::LoginFailed(err) => {
-                log::info!("Login: failed: {err}");
-                *self = App::LoginFailed { err };
+            Message::AuthSuccess(auth) => {
+                log::info!("Auth: Success!");
+                *self = App::Auth {
+                    input_ref: NodeRef::default(),
+                    auth,
+                };
+                true
+            }
+
+            Message::AuthErr(err) => {
+                log::info!("Auth: failed: {err}");
+                *self = App::Login {
+                    input_ref: NodeRef::default(),
+                    err: Some(err),
+                };
+                true
+            }
+
+            Message::Login => {
+                log::info!("Login()");
                 true
             }
         }
@@ -77,31 +109,29 @@ impl Component for App {
         log::info!("view()");
 
         match self {
-            App::Login { input_ref } => {
+            App::Login { input_ref, err } => {
                 log::info!("view(): Login");
 
                 let onclick_login = ctx.link().callback(move |_| {
-                    web_sys::console::log_1(&"Login clicked".into());
-                    Message::StartLoggingIn
+                    web_sys::console::log_1(&"Authenticate clicked".into());
+                    Message::Authenticate
                 });
 
                 html! {
-                    <Login {input_ref} {onclick_login}/>
+                    <Login {input_ref} {onclick_login} error={err.clone()}/>
                 }
             }
 
-            App::LoggedIn { name } => {
-                html! {
-                    <Home />
-                }
-            }
+            App::Auth { input_ref, auth } => {
+                let onclick_login = ctx.link().callback(move |_| {
+                    web_sys::console::log_1(&"Login clicked".into());
+                    Message::Login
+                });
 
-            App::LoginFailed { err } => {
                 html! {
-                    <p> { "Login Failed " } {err} </p>
+                    <crate::view::auth::Auth {input_ref} {onclick_login} auth={auth.clone()}/>
                 }
             }
         }
     }
 }
-
