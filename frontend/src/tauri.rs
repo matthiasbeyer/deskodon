@@ -39,10 +39,15 @@ pub async fn call_login(name: String) -> Result<LoginHandle, Error> {
 }
 
 pub async fn call_generate_auth(instance: url::Url) -> Result<Auth, Error> {
-    generate_auth(instance.to_string())
-        .await
-        .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
-        .and_then(|val| serde_wasm_bindgen::from_value::<Auth>(val).map_err(Error::from))
+    match generate_auth(instance.to_string()).await {
+        Err(e) => {
+            log::error!("Error calling 'generate_auth()': {:?}", e);
+            Err(Error::Tauri(format!("{:?}", e)))
+        }
+        Ok(val) => {
+            serde_wasm_bindgen::from_value::<Auth>(val).map_err(Error::from)
+        }
+    }
 }
 
 pub async fn call_fetch_access_token(auth: Auth, auth_token: String) -> Result<AccessToken, Error> {
