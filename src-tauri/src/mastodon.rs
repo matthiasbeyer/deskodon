@@ -6,6 +6,7 @@ use crate::error::Error;
 use mastodon_async::mastodon::Mastodon;
 use mastodon_async::registration::Registered;
 use mastodon_async::Registration;
+use deskodon_types::authorization_code::AuthorizationCode;
 
 use tokio::sync::RwLock;
 
@@ -64,7 +65,7 @@ impl MastodonState {
         Ok(())
     }
 
-    pub async fn finalize_registration(&self, code: String) -> Result<(), Error> {
+    pub async fn finalize_registration(&self, code: AuthorizationCode) -> Result<(), Error> {
         let mut inner = self.0.write().await;
         if let Inner::Registering { registration } = &*inner {
             let mastodon = registration.complete(code.as_ref()).await?;
