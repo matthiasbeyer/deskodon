@@ -61,7 +61,6 @@
           gdk-pixbuf
           glib.out
           gtk3
-          harfbuzz
           libsoup
           openssl.out
           pango
