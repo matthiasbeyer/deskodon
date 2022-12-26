@@ -67,7 +67,6 @@
           gtk3
           harfbuzz
           libsoup
-          nodejs-16_x
           openssl.out
           pango
           pkg-config
