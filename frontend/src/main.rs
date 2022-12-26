@@ -1,6 +1,6 @@
-mod message;
 mod tauri;
 mod view;
+mod route;
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());

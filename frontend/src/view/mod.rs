@@ -1,7 +1,5 @@
 mod app;
-mod auth;
-mod home;
-mod login;
+mod registration;
 
 pub use self::app::App;
 
