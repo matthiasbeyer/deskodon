@@ -55,7 +55,6 @@
         ];
 
         guiBuildInputs = (with pkgs; [
-          appimagekit
           atk
           cairo
           dbus.lib
