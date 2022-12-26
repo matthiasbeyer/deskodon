@@ -55,7 +55,6 @@
         ];
 
         guiBuildInputs = (with pkgs; [
-          atk
           cairo
           dbus.lib
           dbus
