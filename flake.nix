@@ -58,7 +58,6 @@
           cairo
           dbus.lib
           dbus
-          dprint
           gdk-pixbuf
           glib.out
           gtk3
