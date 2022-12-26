@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1", features = [ "derive" ] }
-url = { version = "2.3", features = ["serde"] }
 thiserror = "1"
