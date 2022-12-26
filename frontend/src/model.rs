@@ -38,15 +38,12 @@ impl Model {
 
     pub fn update(&mut self, msg: Message, orders: &mut impl Orders<Message>) {
         match msg {
-            Message::ConfigFileFound(path) => match self {
-                Model::Initialized => {
+            Message::ConfigFileFound(path) => {
+                if let Model::Initialized = self {
                     perform_call_load_mastodon(orders, path);
                     *self = Model::LoggingIn;
                 }
-                _ => {
-                    // TODO
-                }
-            },
+            }
             Message::Error(ErrorMessage::ConfigFileNotFound(s)) => {
                 *self = Model::Unauthorized {
                     mastodon_url: String::new(),
@@ -54,22 +51,19 @@ impl Model {
                 };
             }
             Message::Register => {
-                match self {
-                    Model::Unauthorized { mastodon_url, .. } => {
-                        let url = match url::Url::parse(&mastodon_url) {
-                            Ok(url) => url,
-                            Err(e) => {
-                                *self = Model::Unauthorized {
-                                    mastodon_url: mastodon_url.to_string(),
-                                    error: Some(e.to_string()),
-                                };
+                if let Model::Unauthorized { mastodon_url, .. } = self {
+                    let url = match url::Url::parse(mastodon_url) {
+                        Ok(url) => url,
+                        Err(e) => {
+                            *self = Model::Unauthorized {
+                                mastodon_url: mastodon_url.to_string(),
+                                error: Some(e.to_string()),
+                            };
 
-                                return; // early
-                            }
-                        };
-                        perform_call_register(orders, url);
-                    }
-                    _ => {}
+                            return; // early
+                        }
+                    };
+                    perform_call_register(orders, url);
                 }
             }
             Message::RegistrationStarted => {
@@ -77,27 +71,26 @@ impl Model {
                     code: String::new(),
                 };
             }
-            Message::Authorize => match self {
-                Model::WaitingForAuthCode { code } => {
+            Message::Authorize => {
+                if let Model::WaitingForAuthCode { code } = self {
                     let code = AuthorizationCode::from(code.to_string());
                     perform_call_finalize_registration(orders, code);
                 }
-                _ => {}
-            },
+            }
             Message::LoggedIn => {
                 *self = Model::Home;
             }
 
-            Message::MastodonUrlInput(text) => match self {
-                Model::Unauthorized { mastodon_url, .. } => {
+            Message::MastodonUrlInput(text) => {
+                if let Model::Unauthorized { mastodon_url, .. } = self {
                     *mastodon_url = text;
                 }
-                _ => {}
-            },
-            Message::MastodonAuthCodeInput(newcode) => match self {
-                Model::WaitingForAuthCode { code } => *code = newcode,
-                _ => {}
-            },
+            }
+            Message::MastodonAuthCodeInput(newcode) => {
+                if let Model::WaitingForAuthCode { code } = self {
+                    *code = newcode;
+                }
+            }
             Message::Error(ErrorMessage::LoadingFailed(s)) => {
                 *self = Model::LoadingConfigFailed(s);
             }
