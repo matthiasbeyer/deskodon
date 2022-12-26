@@ -20,6 +20,11 @@ extern "C" {
         clientSecret: String,
         authToken: String,
     ) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(js_name = invokeOpenBrowser, catch)]
+    async fn open_browser(
+        url: String,
+    ) -> Result<JsValue, JsValue>;
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -58,6 +63,13 @@ pub async fn call_fetch_access_token(auth: Auth, auth_token: String) -> Result<A
         auth_token,
     )
     .await
+    .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
+    .and_then(|val| serde_wasm_bindgen::from_value::<AccessToken>(val).map_err(Error::from))
+}
+
+pub async fn call_open_browser(url: url::Url) -> Result<(), Error> {
+    open_browser(url.to_string())
+        .await
     .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
     .and_then(|val| serde_wasm_bindgen::from_value::<AccessToken>(val).map_err(Error::from))
 }

@@ -6,6 +6,7 @@ pub struct Auth;
 pub struct AuthProbs {
     pub input_ref: NodeRef,
     pub onclick_login: Callback<()>,
+    pub open_browser: Callback<url::Url>,
 
     pub auth: deskodon_types::auth::Auth,
 }
@@ -29,8 +30,22 @@ impl Component for Auth {
             cb.emit(());
         };
 
+        let open_browser_cb = ctx.props().open_browser.clone();
+        let url = ctx.props().auth.url.clone();
+        let open_browser = move |_| {
+            open_browser_cb.emit(url);
+        };
+
         html! {
             <div class="columns">
+                <div class="column is-half is-offset-one-quarter">
+                    <div class="box">
+                        <button onclick={open_browser}>
+                            {ctx.props().auth.url.to_string()}>{ "Open Authentication page" }
+                        </button>
+                    </div>
+                </div>
+
                 <div class="column is-half is-offset-one-quarter">
                     <div class="box">
                         <div class="field is-horizontal">

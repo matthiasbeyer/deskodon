@@ -6,5 +6,7 @@ pub enum Message {
     AuthErr(String),
 
     Login,
+
+    OpenBrowser(url::Url),
 }
 

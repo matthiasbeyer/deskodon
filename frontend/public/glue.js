@@ -11,3 +11,7 @@ export async function invokeGenerateAuth(instanceUrl) {
 export async function invokeFetchAccessToken(instance, clientId, clientSecret, authToken) {
     return await invoke("fetch_access_token", {instance: instance, client_id: clientId, client_secret: clientSecret, auth_token: authToken});
 }
+
+export async function invokeOpenBrowser(url) {
+    return await invoke("open_browser", {url: url});
+}

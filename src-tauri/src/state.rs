@@ -1,39 +1,76 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::error::Error;
 
-use deskodon_types::access_token::AccessToken;
-use deskodon_types::auth::Auth;
-use deskodon_types::error::Error as DError;
+use mastodon_async::mastodon::Mastodon;
+use mastodon_async::registration::Registered;
+use mastodon_async::Registration;
 
-use megalodon::mastodon::Mastodon;
+use tokio::sync::RwLock;
 
 const USER_AGENT: &str = "deskodon";
 
-#[derive(Debug)]
-pub struct State {
-    mastodon: Option<Arc<Mastodon>>,
+pub struct State(Arc<RwLock<Inner>>);
+
+enum Inner {
+    Empty,
+    Registering { registration: Registered },
+
+    Mastodon(Mastodon),
 }
 
 impl Default for State {
     fn default() -> Self {
-        Self { mastodon: None }
+        Self(Arc::new(RwLock::new(Inner::Empty)))
     }
 }
 
 impl State {
-    pub fn connect(&mut self, instance: url::Url, token: AccessToken) -> Result<(), Error> {
-        let mastodon = megalodon::mastodon::Mastodon::new(
-            instance.as_ref().to_string(),
-            Some(token.as_ref().to_string()),
-            Some(USER_AGENT.to_string()),
-        );
+    pub async fn state_file(&self) -> Result<Option<PathBuf>, Error> {
+        let xdg_dirs = xdg::BaseDirectories::with_prefix("deskodon")?;
 
-        self.mastodon = Some(Arc::new(mastodon));
+        match xdg_dirs.find_config_file("deskodon.toml") {
+            Some(config_file) => Ok(Some(config_file)),
+            None => Ok(None),
+        }
+    }
+
+    pub async fn load_from_file(&self, config_path: PathBuf) -> Result<(), Error> {
+        let config_data: mastodon_async::data::Data = {
+            let file = tokio::fs::read_to_string(&config_path).await?;
+            toml::from_str(file.as_ref())?
+        };
+
+        {
+            let mut inner = self.0.write().await;
+            *inner = Inner::Mastodon(Mastodon::from(config_data));
+        }
+
         Ok(())
     }
 
-    pub fn connected(&self) -> bool {
-        self.mastodon.is_some()
+    pub async fn register(&self, instance_url: url::Url) -> Result<(), Error> {
+        let registration = Registration::new(instance_url)
+            .client_name(USER_AGENT)
+            .build()
+            .await?;
+
+        {
+            let mut inner = self.0.write().await;
+            *inner = Inner::Registering { registration };
+        }
+
+        Ok(())
+    }
+
+    pub async fn finalize_registration(&self, code: String) -> Result<(), Error> {
+        let mut inner = self.0.write().await;
+        if let Inner::Registering { registration } = &*inner {
+            let mastodon = registration.complete(code.as_ref()).await?;
+            *inner = Inner::Mastodon(mastodon);
+        }
+
+        Ok(())
     }
 }

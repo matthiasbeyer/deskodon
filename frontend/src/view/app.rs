@@ -102,6 +102,13 @@ impl Component for App {
                 log::info!("Login()");
                 true
             }
+
+            Message::OpenBrowser(url) => {
+                log::info!("Opening browser at {}", url);
+                ctx.link().send_future(async move {
+                    crate::tauri::call_open_browser(url).await
+                })
+            }
         }
     }
 
@@ -126,6 +133,11 @@ impl Component for App {
                 let onclick_login = ctx.link().callback(move |_| {
                     web_sys::console::log_1(&"Login clicked".into());
                     Message::Login
+                });
+
+                let open_browser = ctx.link().callback(move |url: url::Url| {
+                    web_sys::console::log_1(format!("Open browser: {}" url).into());
+                    Message::OpenBrowser(url)
                 });
 
                 html! {
