@@ -6,9 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+deskodon-types = { version = "0.1.0", path = "../types" }
 js-sys = "0.3.55"
-wasm-bindgen = "0.2.78"
-wasm-bindgen-futures = "0.4.28"
-web-sys = "0.3.55"
-yew = "0.20.0"
-yew-router = "0.17.0"
+log = "0.4"
+seed = "0.9.2"
+serde-wasm-bindgen = "0.4.5"
+thiserror = "1"
+url = "2.3.1"
+wasm-bindgen = "0.2.83"
+wasm-bindgen-futures = "0.4.33"
+wasm-logger = "0.2"
+
