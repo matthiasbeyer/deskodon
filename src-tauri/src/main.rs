@@ -8,10 +8,10 @@ use tauri_plugin_log::{LogTarget, LoggerBuilder};
 mod browser;
 mod commands;
 mod error;
-mod state;
+mod mastodon;
 
 fn main() {
-    let app_state = crate::state::State::default();
+    let app_state = crate::mastodon::MastodonState::default();
 
     tauri::Builder::default()
         .manage(app_state)

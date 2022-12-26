@@ -11,7 +11,7 @@ use tokio::sync::RwLock;
 
 const USER_AGENT: &str = "deskodon";
 
-pub struct State(Arc<RwLock<Inner>>);
+pub struct MastodonState(Arc<RwLock<Inner>>);
 
 enum Inner {
     Empty,
@@ -20,13 +20,13 @@ enum Inner {
     Mastodon(Mastodon),
 }
 
-impl Default for State {
+impl Default for MastodonState {
     fn default() -> Self {
         Self(Arc::new(RwLock::new(Inner::Empty)))
     }
 }
 
-impl State {
+impl MastodonState {
     pub async fn state_file(&self) -> Result<Option<PathBuf>, Error> {
         let xdg_dirs = xdg::BaseDirectories::with_prefix("deskodon")?;
 
