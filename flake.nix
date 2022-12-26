@@ -55,22 +55,16 @@
         ];
 
         guiBuildInputs = (with pkgs; [
-          alejandra
-          appimagekit
-          atk
           cairo
           dbus.lib
           dbus
-          dprint
           gdk-pixbuf
           glib.out
           gtk3
-          harfbuzz
           libsoup
           openssl.out
           pango
           pkg-config
-          treefmt
           webkitgtk
           zlib
           pkg-config

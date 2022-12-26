@@ -737,7 +737,6 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "thiserror",
- "url 2.3.1",
 ]
 
 [[package]]
