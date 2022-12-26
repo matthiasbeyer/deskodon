@@ -21,9 +21,11 @@ fn main() {
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
-            crate::commands::configuration_file_path,
-            crate::commands::load_mastodon,
             crate::browser::open_browser,
+            crate::commands::configuration_file_path,
+            crate::commands::finalize_registration,
+            crate::commands::load_mastodon,
+            crate::commands::register,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
