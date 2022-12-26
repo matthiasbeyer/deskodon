@@ -24,6 +24,7 @@ pub enum Model {
 
 impl Model {
     pub fn init(_: Url, orders: &mut impl Orders<Message>) -> Model {
+        log::info!("init()");
         orders.perform_cmd(async {
             crate::tauri::call_configuration_file_path()
                 .await
@@ -37,6 +38,7 @@ impl Model {
     }
 
     pub fn update(&mut self, msg: Message, orders: &mut impl Orders<Message>) {
+        log::info!("update(msg: {:?})", msg);
         match msg {
             Message::ConfigFileFound(path) => {
                 if let Model::Initialized = self {
