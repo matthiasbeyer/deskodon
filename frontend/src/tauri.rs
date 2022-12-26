@@ -10,10 +10,10 @@ extern "C" {
     async fn configuration_file_path() -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(js_name = invoke_load_mastodon, catch)]
-    async fn load_mastodon(config_file: String) -> Result<JsValue, JsValue>;
+    async fn load_mastodon(configFile: String) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(js_name = invoke_register, catch)]
-    async fn register(instance_url: String) -> Result<JsValue, JsValue>;
+    async fn register(instanceUrl: String) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(js_name = invoke_finalize_registration, catch)]
     async fn finalize_registration(code: String) -> Result<JsValue, JsValue>;
@@ -29,6 +29,7 @@ pub enum Error {
 }
 
 pub async fn call_configuration_file_path() -> Result<PathBuf, Error> {
+    log::debug!("calling: configuration_file_path()");
     configuration_file_path()
         .await
         .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
@@ -36,6 +37,7 @@ pub async fn call_configuration_file_path() -> Result<PathBuf, Error> {
 }
 
 pub async fn call_load_mastodon(config_file: PathBuf) -> Result<(), Error> {
+    log::debug!("calling: load_mastodon({})", config_file.display());
     load_mastodon(config_file.display().to_string())
         .await
         .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
@@ -43,6 +45,7 @@ pub async fn call_load_mastodon(config_file: PathBuf) -> Result<(), Error> {
 }
 
 pub async fn call_register(instance_url: url::Url) -> Result<(), Error> {
+    log::debug!("calling: register({})", instance_url);
     register(instance_url.to_string())
         .await
         .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
@@ -50,6 +53,7 @@ pub async fn call_register(instance_url: url::Url) -> Result<(), Error> {
 }
 
 pub async fn call_finalize_registration(code: AuthorizationCode) -> Result<(), Error> {
+    log::debug!("calling: finalize_registration({})", code.as_ref());
     finalize_registration(code.as_ref().to_string())
         .await
         .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
