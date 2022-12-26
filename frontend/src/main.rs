@@ -1,4 +1,4 @@
-use seed::{prelude::wasm_bindgen, App};
+use seed::App;
 
 mod message;
 mod model;
