@@ -20,17 +20,19 @@ pub enum Model {
     },
 }
 
-pub fn init(_: Url, orders: &mut impl Orders<Message>) -> Model {
-    orders.perform_cmd(async {
-        crate::tauri::call_configuration_file_path()
-            .await
-            .map(Message::ConfigFileFound)
-            .map_err(|te| te.to_string())
-            .map_err(ErrorMessage::ConfigFileNotFound)
-            .unwrap_either_message()
-    });
+impl Model {
+    pub fn init(_: Url, orders: &mut impl Orders<Message>) -> Model {
+        orders.perform_cmd(async {
+            crate::tauri::call_configuration_file_path()
+                .await
+                .map(Message::ConfigFileFound)
+                .map_err(|te| te.to_string())
+                .map_err(ErrorMessage::ConfigFileNotFound)
+                .unwrap_either_message()
+        });
 
-    Model::Initialized
+        Model::Initialized
+    }
 }
 
 pub fn update(msg: Message, model: &mut Model, orders: &mut impl Orders<Message>) {

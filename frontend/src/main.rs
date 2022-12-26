@@ -12,7 +12,7 @@ pub fn main() {
 
     App::start(
         "deskodon",
-        crate::model::init,
+        crate::model::Model::init,
         crate::model::update,
         crate::view::view,
     );
