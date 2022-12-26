@@ -13,7 +13,15 @@ pub fn main() {
     App::start(
         "deskodon",
         crate::model::Model::init,
-        crate::model::update,
+        update,
         crate::view::view,
     );
+}
+
+fn update(
+    msg: message::Message,
+    model: &mut model::Model,
+    orders: &mut impl seed::prelude::Orders<message::Message>,
+) {
+    model.update(msg, orders)
 }
