@@ -3,10 +3,10 @@ use std::sync::Arc;
 
 use crate::error::Error;
 
+use deskodon_types::authorization_code::AuthorizationCode;
 use mastodon_async::mastodon::Mastodon;
 use mastodon_async::registration::Registered;
 use mastodon_async::Registration;
-use deskodon_types::authorization_code::AuthorizationCode;
 
 use tokio::sync::RwLock;
 
