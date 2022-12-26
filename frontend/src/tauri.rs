@@ -10,10 +10,10 @@ extern "C" {
     async fn configuration_file_path() -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(js_name = invoke_load_mastodon, catch)]
-    async fn load_mastodon(config_file: String) -> Result<JsValue, JsValue>;
+    async fn load_mastodon(configFile: String) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(js_name = invoke_register, catch)]
-    async fn register(instance_url: String) -> Result<JsValue, JsValue>;
+    async fn register(instanceUrl: String) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(js_name = invoke_finalize_registration, catch)]
     async fn finalize_registration(code: String) -> Result<JsValue, JsValue>;
