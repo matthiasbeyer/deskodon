@@ -65,7 +65,6 @@
           openssl.out
           pango
           pkg-config
-          treefmt
           webkitgtk
           zlib
           pkg-config
