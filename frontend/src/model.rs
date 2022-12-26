@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use deskodon_types::authorization_code::AuthorizationCode;
 use seed::{prelude::Orders, Url};
 
@@ -38,16 +40,8 @@ impl Model {
         match msg {
             Message::ConfigFileFound(path) => match self {
                 Model::Initialized => {
-                    orders.perform_cmd(async {
-                        crate::tauri::call_load_mastodon(path)
-                            .await
-                            .map(|_| Message::LoggedIn)
-                            .map_err(|te| te.to_string())
-                            .map_err(ErrorMessage::LoadingFailed)
-                            .unwrap_either_message()
-                    });
-
-                    *self= Model::LoggingIn;
+                    perform_call_load_mastodon(orders, path);
+                    *self = Model::LoggingIn;
                 }
                 _ => {
                     // TODO
@@ -60,7 +54,7 @@ impl Model {
                 };
             }
             Message::Register => {
-                match self{
+                match self {
                     Model::Unauthorized { mastodon_url, .. } => {
                         let url = match url::Url::parse(&mastodon_url) {
                             Ok(url) => url,
@@ -70,20 +64,12 @@ impl Model {
                                     error: Some(e.to_string()),
                                 };
 
-                                return // early
+                                return; // early
                             }
                         };
-                        orders.perform_cmd(async {
-                            crate::tauri::call_register(url)
-                                .await
-                                .map(|_| Message::RegistrationStarted)
-                                .map_err(|te| te.to_string())
-                                .map_err(ErrorMessage::RegistrationFailed)
-                                .unwrap_either_message()
-                        });
+                        perform_call_register(orders, url);
                     }
-                    _ => {
-                    }
+                    _ => {}
                 }
             }
             Message::RegistrationStarted => {
@@ -91,60 +77,75 @@ impl Model {
                     code: String::new(),
                 };
             }
-            Message::Authorize => {
-                match self {
-                    Model::WaitingForAuthCode { code } => {
-                        let code = code.to_string();
-                        orders.perform_cmd(async {
-                            crate::tauri::call_finalize_registration(AuthorizationCode::from(code))
-                                .await
-                                .map(|_| Message::LoggedIn)
-                                .map_err(|te| te.to_string())
-                                .map_err(ErrorMessage::LoginFailed)
-                                .unwrap_either_message()
-                        });
-
-                    }
-                    _ => {
-                    }
+            Message::Authorize => match self {
+                Model::WaitingForAuthCode { code } => {
+                    let code = AuthorizationCode::from(code.to_string());
+                    perform_call_finalize_registration(orders, code);
                 }
-            }
+                _ => {}
+            },
             Message::LoggedIn => {
                 *self = Model::Home;
             }
 
-            Message::MastodonUrlInput(text) => {
-                match self {
-                    Model::Unauthorized { mastodon_url, .. } => {
-                        *mastodon_url = text;
-                    }
-                    _ => {
-                    }
+            Message::MastodonUrlInput(text) => match self {
+                Model::Unauthorized { mastodon_url, .. } => {
+                    *mastodon_url = text;
                 }
-            }
-            Message::MastodonAuthCodeInput(newcode) => {
-                match self {
-                    Model::WaitingForAuthCode { code } => *code = newcode,
-                    _ => {
-                    }
-                }
-            }
+                _ => {}
+            },
+            Message::MastodonAuthCodeInput(newcode) => match self {
+                Model::WaitingForAuthCode { code } => *code = newcode,
+                _ => {}
+            },
             Message::Error(ErrorMessage::LoadingFailed(s)) => {
                 *self = Model::LoadingConfigFailed(s);
             }
             Message::Error(ErrorMessage::RegistrationFailed(s)) => {
                 *self = Model::Unauthorized {
                     mastodon_url: String::new(),
-                    error: Some(s)
+                    error: Some(s),
                 };
             }
             Message::Error(ErrorMessage::LoginFailed(s)) => {
                 *self = Model::Unauthorized {
                     mastodon_url: String::new(),
-                    error: Some(s)
+                    error: Some(s),
                 };
             }
         }
     }
 }
 
+fn perform_call_load_mastodon(orders: &mut impl Orders<Message>, path: PathBuf) {
+    orders.perform_cmd(async {
+        crate::tauri::call_load_mastodon(path)
+            .await
+            .map(|_| Message::LoggedIn)
+            .map_err(|te| te.to_string())
+            .map_err(ErrorMessage::LoadingFailed)
+            .unwrap_either_message()
+    });
+}
+
+fn perform_call_register(orders: &mut impl Orders<Message>, url: url::Url) {
+    orders.perform_cmd(async {
+        crate::tauri::call_register(url)
+            .await
+            .map(|_| Message::RegistrationStarted)
+            .map_err(|te| te.to_string())
+            .map_err(ErrorMessage::RegistrationFailed)
+            .unwrap_either_message()
+    });
+}
+
+fn perform_call_finalize_registration(orders: &mut impl Orders<Message>, code: AuthorizationCode) {
+    orders.perform_cmd(async {
+        crate::tauri::call_finalize_registration(code)
+            .await
+            .map(|_| Message::LoggedIn)
+            .map_err(|te| te.to_string())
+            .map_err(ErrorMessage::LoginFailed)
+            .unwrap_either_message()
+    });
+}
