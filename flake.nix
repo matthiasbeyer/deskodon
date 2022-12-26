@@ -55,7 +55,6 @@
         ];
 
         guiBuildInputs = (with pkgs; [
-          alejandra
           appimagekit
           atk
           cairo
