@@ -5,7 +5,13 @@ use crate::message::Message;
 use crate::model::Model;
 
 mod unauthorized;
+use self::unauthorized::view_unauthorized as unauthorized;
+
 mod waiting_for_authcode;
+use self::waiting_for_authcode::view_waiting_for_authcode as waiting_for_authcode;
+
+mod button;
+use self::button::view_button as button;
 
 pub fn view(model: &Model) -> Node<Message> {
     match model {
@@ -15,7 +21,7 @@ pub fn view(model: &Model) -> Node<Message> {
         Model::Unauthorized {
             mastodon_url,
             error: _,
-        } => self::unauthorized::view_unauthorized(mastodon_url),
+        } => unauthorized(mastodon_url),
 
         Model::LoggingIn => {
             div!["Logging in"]
@@ -31,8 +37,6 @@ pub fn view(model: &Model) -> Node<Message> {
         Model::Home => {
             div!["Home"]
         }
-        Model::WaitingForAuthCode { code } => {
-            self::waiting_for_authcode::view_waiting_for_authcode(code)
-        }
+        Model::WaitingForAuthCode { code } => waiting_for_authcode(code),
     }
 }
