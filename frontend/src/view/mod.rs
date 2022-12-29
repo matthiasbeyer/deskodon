@@ -19,29 +19,35 @@ use self::input::view_input as input;
 use self::input::view_input_labeled as input_labeled;
 
 pub fn view(model: &Model) -> Node<Message> {
-    match model {
-        Model::Initialized => {
-            div!["Hello World"]
-        }
-        Model::Unauthorized {
-            mastodon_url,
-            error: _,
-        } => unauthorized(mastodon_url),
+    div![
+        C!["container", "is-max-widescreen"],
+        div![
+            C!["columns", "is-centered"],
+            match model {
+                Model::Initialized => {
+                    div!["Hello World"]
+                }
+                Model::Unauthorized {
+                    mastodon_url,
+                    error: _,
+                } => div![C!["column", "is-8"], unauthorized(mastodon_url)],
 
-        Model::LoggingIn => {
-            div!["Logging in"]
-        }
-        Model::LoadingConfigFailed(errtext) => {
-            div![
-                "loading config failed",
-                p! {
-                    errtext
-                },
-            ]
-        }
-        Model::Home => {
-            div!["Home"]
-        }
-        Model::WaitingForAuthCode { code } => waiting_for_authcode(code),
-    }
+                Model::LoggingIn => {
+                    div!["Logging in"]
+                }
+                Model::LoadingConfigFailed(errtext) => {
+                    div![
+                        "loading config failed",
+                        p! {
+                            errtext
+                        },
+                    ]
+                }
+                Model::Home => {
+                    div!["Home"]
+                }
+                Model::WaitingForAuthCode { code } => waiting_for_authcode(code),
+            }
+        ]
+    ]
 }
