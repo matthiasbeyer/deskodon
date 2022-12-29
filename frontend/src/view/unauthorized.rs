@@ -13,7 +13,7 @@ pub fn view_unauthorized(mastodon_url: &str) -> Node<Message> {
             C!["box", "is-vcentered"],
             input_labeled(
                 "Instance Url",
-                None,
+                Some("https://mastodon.social"),
                 mastodon_url,
                 input_ev(Ev::Input, Message::MastodonUrlInput)
             ),
