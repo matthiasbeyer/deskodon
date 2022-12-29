@@ -700,6 +700,7 @@ version = "0.1.0"
 dependencies = [
  "deskodon-types",
  "futures",
+ "log",
  "mastodon-async",
  "open",
  "serde",
