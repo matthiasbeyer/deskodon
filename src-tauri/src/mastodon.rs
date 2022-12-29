@@ -29,10 +29,24 @@ impl Default for MastodonState {
 }
 
 impl MastodonState {
-    pub async fn state_file(&self) -> Result<Option<PathBuf>, Error> {
-        let xdg_dirs = xdg::BaseDirectories::with_prefix("deskodon")?;
+    fn xdg_base_dir() -> Result<xdg::BaseDirectories, Error> {
+        xdg::BaseDirectories::with_prefix("deskodon").map_err(Error::from)
+    }
 
-        match xdg_dirs.find_config_file("deskodon.toml") {
+    fn find_config_file(base_dirs: &xdg::BaseDirectories) -> Option<PathBuf> {
+        base_dirs.find_config_file("deskodon.toml")
+    }
+
+    fn create_config_file(base_dirs: &xdg::BaseDirectories) -> Result<PathBuf, Error> {
+        base_dirs
+            .place_config_file("deskodon.toml")
+            .map_err(Error::from)
+    }
+
+    pub async fn state_file(&self) -> Result<Option<PathBuf>, Error> {
+        let xdg_dirs = Self::xdg_base_dir()?;
+
+        match Self::find_config_file(&xdg_dirs) {
             Some(config_file) => Ok(Some(config_file)),
             None => Ok(None),
         }
@@ -85,16 +99,16 @@ impl MastodonState {
     }
 
     pub async fn save_login(&self) -> Result<(), Error> {
-        let xdg_dirs = xdg::BaseDirectories::with_prefix("deskodon")?;
-        let xdg_profile_file_path = xdg_dirs.place_data_file("account.toml")?;
-        log::debug!("Saving login to {}", xdg_profile_file_path.display());
+        let config_file_path =
+            Self::xdg_base_dir().and_then(|dir| Self::create_config_file(&dir))?;
+        log::debug!("Saving login to {}", config_file_path.display());
 
         let mut file = tokio::fs::OpenOptions::new()
             .write(true)
             .create(true)
             .create_new(true)
             .append(false)
-            .open(xdg_profile_file_path)
+            .open(config_file_path)
             .await?;
 
         let inner = self.0.read().await;
