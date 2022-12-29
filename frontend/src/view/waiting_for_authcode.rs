@@ -15,7 +15,7 @@ pub fn view_waiting_for_authcode(code: &str) -> Node<Message> {
                 "Authcode",
                 None,
                 code,
-                input_ev(Ev::Input, Message::MastodonUrlInput)
+                input_ev(Ev::Input, Message::MastodonAuthCodeInput)
             ),
             button_primary("Login", ev(Ev::Click, |_| Message::Authorize)),
         ]
