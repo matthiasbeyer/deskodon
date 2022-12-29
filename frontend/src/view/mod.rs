@@ -14,6 +14,10 @@ mod button;
 use self::button::view_button as button;
 use self::button::view_button_primary as button_primary;
 
+mod input;
+use self::input::view_input as input;
+use self::input::view_input_labeled as input_labeled;
+
 pub fn view(model: &Model) -> Node<Message> {
     match model {
         Model::Initialized => {
