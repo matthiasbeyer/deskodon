@@ -12,6 +12,7 @@ use self::waiting_for_authcode::view_waiting_for_authcode as waiting_for_authcod
 
 mod button;
 use self::button::view_button as button;
+use self::button::view_button_primary as button_primary;
 
 pub fn view(model: &Model) -> Node<Message> {
     match model {
