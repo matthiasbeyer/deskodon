@@ -19,6 +19,7 @@ tauri-build = { version = "1.2.1", features = [] }
 
 [dependencies]
 futures = "0.3"
+log = "0.4"
 mastodon-async = "=1.0.1"
 open = "3.2"
 serde = { version = "1.0", features = ["derive"] }

@@ -18,6 +18,9 @@ mod input;
 use self::input::view_input as input;
 use self::input::view_input_labeled as input_labeled;
 
+mod notification;
+use self::notification::view_notification_error as notification_error;
+
 pub fn view(model: &Model) -> Node<Message> {
     div![
         C!["container", "is-max-widescreen"],
@@ -29,8 +32,11 @@ pub fn view(model: &Model) -> Node<Message> {
                 }
                 Model::Unauthorized {
                     mastodon_url,
-                    error: _,
-                } => div![C!["column", "is-8"], unauthorized(mastodon_url)],
+                    error,
+                } => div![
+                    C!["column", "is-8"],
+                    unauthorized(mastodon_url, error.as_ref().map(AsRef::as_ref))
+                ],
 
                 Model::LoggingIn => {
                     div!["Logging in"]
