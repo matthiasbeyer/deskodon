@@ -71,10 +71,13 @@ impl MastodonState {
             toml::from_str(file.as_ref())?
         };
 
+        log::debug!("Loading configuration data succeeded");
+
         {
             let mut inner = self.0.write().await;
             let mastodon = Mastodon::from(config_data);
             let current_page = mastodon.get_home_timeline().await?;
+            log::debug!("Loading home timeline succeeded");
             *inner = Inner::Mastodon {
                 mastodon,
                 current_page,
