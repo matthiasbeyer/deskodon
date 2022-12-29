@@ -20,6 +20,9 @@ extern "C" {
 
     #[wasm_bindgen(js_name = invoke_finalize_registration, catch)]
     async fn finalize_registration(code: String) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(js_name = invoke_save_login, catch)]
+    async fn save_login() -> Result<JsValue, JsValue>;
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -66,6 +69,14 @@ pub async fn call_open_browser(instance_url: url::Url) -> Result<(), Error> {
 pub async fn call_finalize_registration(code: AuthorizationCode) -> Result<(), Error> {
     log::debug!("calling: finalize_registration({})", code.as_ref());
     finalize_registration(code.as_ref().to_string())
+        .await
+        .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
+        .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
+}
+
+pub async fn call_save_login() -> Result<(), Error> {
+    log::debug!("calling: save_login()");
+    save_login()
         .await
         .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
         .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
