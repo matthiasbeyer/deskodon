@@ -107,6 +107,18 @@ impl Model {
                 }
             }
 
+            Message::Like(status_id) => {
+                log::info!("Liking {:?}", status_id);
+            }
+
+            Message::Retoot(status_id) => {
+                log::info!("Retoot {:?}", status_id);
+            }
+
+            Message::Reply(status_id) => {
+                log::info!("Reply {:?}", status_id);
+            }
+
             Message::MastodonUrlInput(text) => {
                 if let Model::Unauthorized { mastodon_url, .. } = self {
                     *mastodon_url = text;

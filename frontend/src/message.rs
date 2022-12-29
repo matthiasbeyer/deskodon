@@ -1,6 +1,8 @@
 use mastodon_async::entities::status::Status;
 use std::path::PathBuf;
 
+use crate::util::StatusId;
+
 #[derive(Debug)]
 pub enum Message {
     ConfigFileFound(PathBuf),
@@ -16,6 +18,10 @@ pub enum Message {
     BrowserOpenSuccess,
 
     CurrentStatuses(Vec<Status>),
+
+    Like(StatusId),
+    Retoot(StatusId),
+    Reply(StatusId),
 
     Error(ErrorMessage),
 }
