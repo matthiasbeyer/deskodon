@@ -70,7 +70,13 @@ impl MastodonState {
     pub async fn finalize_registration(&self, code: AuthorizationCode) -> Result<(), Error> {
         let mut inner = self.0.write().await;
         if let Inner::Registering { registration } = &*inner {
-            let mastodon = registration.complete(code.as_ref()).await?;
+            let mastodon = match registration.complete(code.as_ref()).await {
+                Err(e) => {
+                    log::error!("Failed to finalize registration: {:?}", e);
+                    return Err(Error::from(e));
+                }
+                Ok(m) => m,
+            };
             *inner = Inner::Mastodon(mastodon);
         }
 
