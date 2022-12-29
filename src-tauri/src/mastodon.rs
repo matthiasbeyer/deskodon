@@ -112,7 +112,6 @@ impl MastodonState {
         let mut file = tokio::fs::OpenOptions::new()
             .write(true)
             .create(true)
-            .create_new(true)
             .append(false)
             .open(config_file_path)
             .await?;
