@@ -4,6 +4,7 @@ use seed::App;
 mod message;
 mod model;
 mod tauri;
+mod util;
 mod view;
 
 pub fn main() {
