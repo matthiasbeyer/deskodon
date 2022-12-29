@@ -723,6 +723,7 @@ dependencies = [
  "deskodon-types",
  "js-sys",
  "log",
+ "mastodon-async",
  "seed",
  "serde-wasm-bindgen",
  "thiserror",

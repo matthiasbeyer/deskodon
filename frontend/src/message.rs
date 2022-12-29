@@ -1,3 +1,4 @@
+use mastodon_async::entities::status::Status;
 use std::path::PathBuf;
 
 #[derive(Debug)]
@@ -14,6 +15,8 @@ pub enum Message {
 
     BrowserOpenSuccess,
 
+    CurrentStatuses(Vec<Status>),
+
     Error(ErrorMessage),
 }
 
@@ -26,6 +29,7 @@ pub enum ErrorMessage {
     FailedToParseUrl { url: String, error: String },
     BrowserOpenFailed(String),
     LoginSafeFailed(String),
+    GettingStatusesFailed(String),
 }
 
 impl From<ErrorMessage> for Message {

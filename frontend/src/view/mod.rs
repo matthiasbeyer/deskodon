@@ -1,3 +1,4 @@
+use mastodon_async::entities::status::Status;
 use seed::prelude::*;
 use seed::*;
 
@@ -9,6 +10,9 @@ use self::unauthorized::view_unauthorized as unauthorized;
 
 mod waiting_for_authcode;
 use self::waiting_for_authcode::view_waiting_for_authcode as waiting_for_authcode;
+
+mod home;
+use self::home::view_home as home;
 
 mod button;
 use self::button::view_button as button;
@@ -49,8 +53,10 @@ pub fn view(model: &Model) -> Node<Message> {
                         },
                     ]
                 }
-                Model::Home => {
-                    div!["Home"]
+                Model::Home {
+                    current_statuses, ..
+                } => {
+                    home(current_statuses)
                 }
                 Model::WaitingForAuthCode { code } => waiting_for_authcode(code),
             }
