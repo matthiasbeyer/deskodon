@@ -82,9 +82,13 @@ impl Model {
             }
             Message::LoggedIn => {
                 *self = Model::Home;
+                perform_safe_login(orders);
             }
             Message::BrowserOpenSuccess => {
                 // ignored for now
+            }
+            Message::LoginSafed => {
+                log::info!("Login saved");
             }
 
             Message::MastodonUrlInput(text) => {
@@ -119,6 +123,12 @@ impl Model {
                 };
             }
             Message::Error(ErrorMessage::BrowserOpenFailed(s)) => {
+                *self = Model::Unauthorized {
+                    mastodon_url: String::new(),
+                    error: Some(s),
+                };
+            }
+            Message::Error(ErrorMessage::LoginSafeFailed(s)) => {
                 *self = Model::Unauthorized {
                     mastodon_url: String::new(),
                     error: Some(s),
@@ -174,6 +184,17 @@ fn perform_call_finalize_registration(orders: &mut impl Orders<Message>, code: A
             .map(|_| Message::LoggedIn)
             .map_err(|te| te.to_string())
             .map_err(ErrorMessage::LoginFailed)
+            .unwrap_either_message()
+    });
+}
+
+fn perform_safe_login(orders: &mut impl Orders<Message>) {
+    orders.perform_cmd(async {
+        crate::tauri::call_save_login()
+            .await
+            .map(|_| Message::LoginSafed)
+            .map_err(|te| te.to_string())
+            .map_err(ErrorMessage::LoginSafeFailed)
             .unwrap_either_message()
     });
 }

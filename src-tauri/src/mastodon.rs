@@ -8,6 +8,7 @@ use mastodon_async::mastodon::Mastodon;
 use mastodon_async::registration::Registered;
 use mastodon_async::Registration;
 
+use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
 
 const USER_AGENT: &str = "deskodon";
@@ -27,11 +28,31 @@ impl Default for MastodonState {
     }
 }
 
-impl MastodonState {
-    pub async fn state_file(&self) -> Result<Option<PathBuf>, Error> {
-        let xdg_dirs = xdg::BaseDirectories::with_prefix("deskodon")?;
+const DESKODON_CONFIG_FILE_NAME: &str = "deskodon.toml";
 
-        match xdg_dirs.find_config_file("deskodon.toml") {
+impl MastodonState {
+    fn xdg_base_dir() -> Result<xdg::BaseDirectories, Error> {
+        xdg::BaseDirectories::with_prefix("deskodon").map_err(Error::from)
+    }
+
+    fn find_config_file(base_dirs: &xdg::BaseDirectories) -> Option<PathBuf> {
+        base_dirs.find_config_file(DESKODON_CONFIG_FILE_NAME)
+    }
+
+    fn create_config_file(base_dirs: &xdg::BaseDirectories) -> Result<PathBuf, Error> {
+        if let Some(path) = Self::find_config_file(base_dirs) {
+            Ok(path)
+        } else {
+            base_dirs
+                .place_config_file(DESKODON_CONFIG_FILE_NAME)
+                .map_err(Error::from)
+        }
+    }
+
+    pub async fn state_file(&self) -> Result<Option<PathBuf>, Error> {
+        let xdg_dirs = Self::xdg_base_dir()?;
+
+        match Self::find_config_file(&xdg_dirs) {
             Some(config_file) => Ok(Some(config_file)),
             None => Ok(None),
         }
@@ -81,5 +102,33 @@ impl MastodonState {
         }
 
         Ok(())
+    }
+
+    pub async fn save_login(&self) -> Result<(), Error> {
+        let config_file_path =
+            Self::xdg_base_dir().and_then(|dir| Self::create_config_file(&dir))?;
+        log::debug!("Saving login to {}", config_file_path.display());
+
+        let mut file = tokio::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(false)
+            .open(config_file_path)
+            .await?;
+
+        let inner = self.0.read().await;
+        if let Inner::Mastodon(mastodon) = &*inner {
+            let data_toml = toml::to_string(&mastodon.data)?;
+            file.write_all(data_toml.as_bytes()).await?;
+            log::debug!("Profile state written");
+            file.sync_all().await?;
+            log::debug!("Profile state syned to disk");
+            Ok(())
+        } else {
+            log::error!("Cannot save profile state: Not authenticated");
+            Err(Error::NotAuthenticated {
+                action_desc: "Saving login",
+            })
+        }
     }
 }

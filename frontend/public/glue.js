@@ -19,3 +19,7 @@ export async function invoke_open_browser(url) {
 export async function invoke_finalize_registration(code) {
     return await invoke("finalize_registration", {code: code});
 }
+
+export async function invoke_save_login() {
+    return await invoke("save_login");
+}

@@ -10,6 +10,7 @@ pub enum Message {
     RegistrationStarted(url::Url),
     MastodonAuthCodeInput(String),
     Authorize,
+    LoginSafed,
 
     BrowserOpenSuccess,
 
@@ -24,6 +25,7 @@ pub enum ErrorMessage {
     LoginFailed(String),
     FailedToParseUrl { url: String, error: String },
     BrowserOpenFailed(String),
+    LoginSafeFailed(String),
 }
 
 impl From<ErrorMessage> for Message {
