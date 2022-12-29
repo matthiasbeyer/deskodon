@@ -7,7 +7,7 @@ pub enum Message {
 
     MastodonUrlInput(String),
     Register,
-    RegistrationStarted,
+    RegistrationStarted(url::Url),
     MastodonAuthCodeInput(String),
     Authorize,
 
@@ -20,6 +20,7 @@ pub enum ErrorMessage {
     LoadingFailed(String),
     RegistrationFailed(String),
     LoginFailed(String),
+    FailedToParseUrl { url: String, error: String },
 }
 
 impl From<ErrorMessage> for Message {
