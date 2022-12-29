@@ -83,6 +83,9 @@ impl Model {
             Message::LoggedIn => {
                 *self = Model::Home;
             }
+            Message::BrowserOpenSuccess => {
+                // ignored for now
+            }
 
             Message::MastodonUrlInput(text) => {
                 if let Model::Unauthorized { mastodon_url, .. } = self {
@@ -115,6 +118,12 @@ impl Model {
                     error: Some(format!("{}: {}", error, url)),
                 };
             }
+            Message::Error(ErrorMessage::BrowserOpenFailed(s)) => {
+                *self = Model::Unauthorized {
+                    mastodon_url: String::new(),
+                    error: Some(s),
+                };
+            }
         }
     }
 }
@@ -143,6 +152,17 @@ fn perform_call_register(orders: &mut impl Orders<Message>, url: url::Url) {
                 })?;
                 Ok(Message::RegistrationStarted(url))
             })
+            .unwrap_either_message()
+    });
+}
+
+fn perform_open_browser(orders: &mut impl Orders<Message>, url: url::Url) {
+    orders.perform_cmd(async {
+        crate::tauri::call_open_browser(url)
+            .await
+            .map(|()| Message::BrowserOpenSuccess)
+            .map_err(|te| te.to_string())
+            .map_err(ErrorMessage::BrowserOpenFailed)
             .unwrap_either_message()
     });
 }
