@@ -12,6 +12,10 @@ export async function invoke_register(instanceUrl) {
     return await invoke("register", {instanceUrl: instanceUrl});
 }
 
+export async function invoke_open_browser(url) {
+    return await invoke("open_browser", {url: url});
+}
+
 export async function invoke_finalize_registration(code) {
     return await invoke("finalize_registration", {code: code});
 }

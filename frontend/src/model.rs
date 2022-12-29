@@ -68,7 +68,8 @@ impl Model {
                     perform_call_register(orders, url);
                 }
             }
-            Message::RegistrationStarted => {
+            Message::RegistrationStarted(url) => {
+                perform_open_browser(orders, url);
                 *self = Model::WaitingForAuthCode {
                     code: String::new(),
                 };
@@ -81,6 +82,9 @@ impl Model {
             }
             Message::LoggedIn => {
                 *self = Model::Home;
+            }
+            Message::BrowserOpenSuccess => {
+                // ignored for now
             }
 
             Message::MastodonUrlInput(text) => {
@@ -108,6 +112,18 @@ impl Model {
                     error: Some(s),
                 };
             }
+            Message::Error(ErrorMessage::FailedToParseUrl { url, error }) => {
+                *self = Model::Unauthorized {
+                    mastodon_url: String::new(),
+                    error: Some(format!("{}: {}", error, url)),
+                };
+            }
+            Message::Error(ErrorMessage::BrowserOpenFailed(s)) => {
+                *self = Model::Unauthorized {
+                    mastodon_url: String::new(),
+                    error: Some(s),
+                };
+            }
         }
     }
 }
@@ -124,12 +140,29 @@ fn perform_call_load_mastodon(orders: &mut impl Orders<Message>, path: PathBuf) 
 }
 
 fn perform_call_register(orders: &mut impl Orders<Message>, url: url::Url) {
-    orders.perform_cmd(async {
-        crate::tauri::call_register(url)
+    orders.perform_cmd(async move {
+        crate::tauri::call_register(url.clone())
             .await
-            .map(|_| Message::RegistrationStarted)
             .map_err(|te| te.to_string())
             .map_err(ErrorMessage::RegistrationFailed)
+            .and_then(|s| {
+                let url = url::Url::parse(&s).map_err(|e| ErrorMessage::FailedToParseUrl {
+                    url: s,
+                    error: e.to_string(),
+                })?;
+                Ok(Message::RegistrationStarted(url))
+            })
+            .unwrap_either_message()
+    });
+}
+
+fn perform_open_browser(orders: &mut impl Orders<Message>, url: url::Url) {
+    orders.perform_cmd(async {
+        crate::tauri::call_open_browser(url)
+            .await
+            .map(|()| Message::BrowserOpenSuccess)
+            .map_err(|te| te.to_string())
+            .map_err(ErrorMessage::BrowserOpenFailed)
             .unwrap_either_message()
     });
 }

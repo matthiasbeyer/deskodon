@@ -28,7 +28,7 @@ pub async fn load_mastodon(
 pub async fn register(
     state: tauri::State<'_, MastodonState>,
     instance_url: url::Url,
-) -> Result<(), Error> {
+) -> Result<String, Error> {
     state
         .inner()
         .register(instance_url)

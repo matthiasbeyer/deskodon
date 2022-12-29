@@ -51,18 +51,20 @@ impl MastodonState {
         Ok(())
     }
 
-    pub async fn register(&self, instance_url: url::Url) -> Result<(), Error> {
+    pub async fn register(&self, instance_url: url::Url) -> Result<String, Error> {
         let registration = Registration::new(instance_url)
             .client_name(USER_AGENT)
             .build()
             .await?;
+
+        let authentication_url = registration.authorize_url()?;
 
         {
             let mut inner = self.0.write().await;
             *inner = Inner::Registering { registration };
         }
 
-        Ok(())
+        Ok(authentication_url)
     }
 
     pub async fn finalize_registration(&self, code: AuthorizationCode) -> Result<(), Error> {

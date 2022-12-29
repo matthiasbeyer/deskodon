@@ -15,6 +15,9 @@ extern "C" {
     #[wasm_bindgen(js_name = invoke_register, catch)]
     async fn register(instanceUrl: String) -> Result<JsValue, JsValue>;
 
+    #[wasm_bindgen(js_name = invoke_open_browser, catch)]
+    async fn open_browser(url: String) -> Result<JsValue, JsValue>;
+
     #[wasm_bindgen(js_name = invoke_finalize_registration, catch)]
     async fn finalize_registration(code: String) -> Result<JsValue, JsValue>;
 }
@@ -44,9 +47,17 @@ pub async fn call_load_mastodon(config_file: PathBuf) -> Result<(), Error> {
         .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
 }
 
-pub async fn call_register(instance_url: url::Url) -> Result<(), Error> {
+pub async fn call_register(instance_url: url::Url) -> Result<String, Error> {
     log::debug!("calling: register({})", instance_url);
     register(instance_url.to_string())
+        .await
+        .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
+        .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
+}
+
+pub async fn call_open_browser(instance_url: url::Url) -> Result<(), Error> {
+    log::debug!("calling: open_brwoser({})", instance_url);
+    open_browser(instance_url.to_string())
         .await
         .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
         .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
