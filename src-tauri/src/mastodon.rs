@@ -28,19 +28,25 @@ impl Default for MastodonState {
     }
 }
 
+const DESKODON_CONFIG_FILE_NAME: &str = "deskodon.toml";
+
 impl MastodonState {
     fn xdg_base_dir() -> Result<xdg::BaseDirectories, Error> {
         xdg::BaseDirectories::with_prefix("deskodon").map_err(Error::from)
     }
 
     fn find_config_file(base_dirs: &xdg::BaseDirectories) -> Option<PathBuf> {
-        base_dirs.find_config_file("deskodon.toml")
+        base_dirs.find_config_file(DESKODON_CONFIG_FILE_NAME)
     }
 
     fn create_config_file(base_dirs: &xdg::BaseDirectories) -> Result<PathBuf, Error> {
-        base_dirs
-            .place_config_file("deskodon.toml")
-            .map_err(Error::from)
+        if let Some(path) = Self::find_config_file(base_dirs) {
+            Ok(path)
+        } else {
+            base_dirs
+                .place_config_file(DESKODON_CONFIG_FILE_NAME)
+                .map_err(Error::from)
+        }
     }
 
     pub async fn state_file(&self) -> Result<Option<PathBuf>, Error> {
