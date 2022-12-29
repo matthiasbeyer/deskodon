@@ -32,8 +32,11 @@ pub fn view(model: &Model) -> Node<Message> {
                 }
                 Model::Unauthorized {
                     mastodon_url,
-                    error: _,
-                } => div![C!["column", "is-8"], unauthorized(mastodon_url)],
+                    error,
+                } => div![
+                    C!["column", "is-8"],
+                    unauthorized(mastodon_url, error.as_ref().map(AsRef::as_ref))
+                ],
 
                 Model::LoggingIn => {
                     div!["Logging in"]
