@@ -4,7 +4,9 @@ use std::sync::Arc;
 use crate::error::Error;
 
 use deskodon_types::authorization_code::AuthorizationCode;
+use mastodon_async::entities::status::Status;
 use mastodon_async::mastodon::Mastodon;
+use mastodon_async::page::Page;
 use mastodon_async::registration::Registered;
 use mastodon_async::Registration;
 
@@ -17,9 +19,14 @@ pub struct MastodonState(Arc<RwLock<Inner>>);
 
 enum Inner {
     Empty,
-    Registering { registration: Registered },
+    Registering {
+        registration: Registered,
+    },
 
-    Mastodon(Mastodon),
+    Mastodon {
+        mastodon: Mastodon,
+        current_page: Page<Status>,
+    },
 }
 
 impl Default for MastodonState {
@@ -66,7 +73,12 @@ impl MastodonState {
 
         {
             let mut inner = self.0.write().await;
-            *inner = Inner::Mastodon(Mastodon::from(config_data));
+            let mastodon = Mastodon::from(config_data);
+            let current_page = mastodon.get_home_timeline().await?;
+            *inner = Inner::Mastodon {
+                mastodon,
+                current_page,
+            };
         }
 
         Ok(())
@@ -98,7 +110,11 @@ impl MastodonState {
                 }
                 Ok(m) => m,
             };
-            *inner = Inner::Mastodon(mastodon);
+            let current_page = mastodon.get_home_timeline().await?;
+            *inner = Inner::Mastodon {
+                mastodon,
+                current_page,
+            };
         }
 
         Ok(())
@@ -117,7 +133,7 @@ impl MastodonState {
             .await?;
 
         let inner = self.0.read().await;
-        if let Inner::Mastodon(mastodon) = &*inner {
+        if let Inner::Mastodon { mastodon, .. } = &*inner {
             let data_toml = toml::to_string(&mastodon.data)?;
             file.write_all(data_toml.as_bytes()).await?;
             log::debug!("Profile state written");
@@ -128,6 +144,17 @@ impl MastodonState {
             log::error!("Cannot save profile state: Not authenticated");
             Err(Error::NotAuthenticated {
                 action_desc: "Saving login",
+            })
+        }
+    }
+
+    pub async fn get_current_statuses(&self) -> Result<Vec<Status>, Error> {
+        let inner = self.0.read().await;
+        if let Inner::Mastodon { current_page, .. } = &*inner {
+            Ok(current_page.initial_items.clone())
+        } else {
+            Err(Error::NotAuthenticated {
+                action_desc: "Getting current statuses",
             })
         }
     }

@@ -27,6 +27,7 @@ fn main() {
             crate::commands::load_mastodon,
             crate::commands::register,
             crate::commands::save_login,
+            crate::commands::get_current_statuses,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
