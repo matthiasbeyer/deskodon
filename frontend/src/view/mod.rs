@@ -18,6 +18,9 @@ mod input;
 use self::input::view_input as input;
 use self::input::view_input_labeled as input_labeled;
 
+mod notification;
+use self::notification::view_notification_error as notification_error;
+
 pub fn view(model: &Model) -> Node<Message> {
     div![
         C!["container", "is-max-widescreen"],
