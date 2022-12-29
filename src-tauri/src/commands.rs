@@ -47,3 +47,14 @@ pub async fn finalize_registration(
         .await
         .map_err(Error::from)
 }
+
+#[tauri::command]
+pub async fn save_login(
+    state: tauri::State<'_, MastodonState>,
+) -> Result<(), Error> {
+    state
+        .inner()
+        .save_login()
+        .await
+        .map_err(Error::from)
+}

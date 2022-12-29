@@ -14,6 +14,12 @@ pub enum Error {
 
     #[error(transparent)]
     TomlDe(#[from] toml::de::Error),
+
+    #[error(transparent)]
+    TomlSer(#[from] toml::ser::Error),
+
+    #[error("Action not possible because not authenticated: {}", .action_desc)]
+    NotAuthenticated { action_desc: &'static str },
 }
 
 impl From<Error> for deskodon_types::error::Error {
