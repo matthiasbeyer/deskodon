@@ -44,7 +44,7 @@ pub async fn call_load_mastodon(config_file: PathBuf) -> Result<(), Error> {
         .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
 }
 
-pub async fn call_register(instance_url: url::Url) -> Result<(), Error> {
+pub async fn call_register(instance_url: url::Url) -> Result<String, Error> {
     log::debug!("calling: register({})", instance_url);
     register(instance_url.to_string())
         .await
