@@ -1,3 +1,4 @@
+#![allow(unused_imports, dead_code)]
 use seed::App;
 
 mod message;
