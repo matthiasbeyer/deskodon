@@ -4,6 +4,7 @@ use crate::mastodon::MastodonState;
 
 use deskodon_types::authorization_code::AuthorizationCode;
 use deskodon_types::error::Error;
+use mastodon_async::entities::status::Status;
 
 trait LogResult<T> {
     fn log_result(self) -> Result<T, Error>;
@@ -86,6 +87,18 @@ pub async fn save_login(state: tauri::State<'_, MastodonState>) -> Result<(), Er
     state
         .inner()
         .save_login()
+        .await
+        .map_err(Error::from)
+        .log_result()
+}
+
+#[tauri::command]
+pub async fn get_current_statuses(
+    state: tauri::State<'_, MastodonState>,
+) -> Result<Vec<Status>, Error> {
+    state
+        .inner()
+        .get_current_statuses()
         .await
         .map_err(Error::from)
         .log_result()

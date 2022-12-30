@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use deskodon_types::authorization_code::AuthorizationCode;
+use mastodon_async_entities::status::Status;
 use seed::{prelude::Orders, Url};
 
 use crate::message::{ErrorMessage, Message, UnwrapEitherMessage};
@@ -11,7 +12,10 @@ pub enum Model {
 
     LoadingConfigFailed(String),
 
-    Home,
+    Home {
+        errors: Vec<String>,
+        current_statuses: Vec<Status>,
+    },
 
     Unauthorized {
         mastodon_url: String,
@@ -81,14 +85,39 @@ impl Model {
                 }
             }
             Message::LoggedIn => {
-                *self = Model::Home;
+                *self = Model::Home {
+                    errors: vec![],
+                    current_statuses: vec![],
+                };
                 perform_safe_login(orders);
+                perform_get_current_statuses(orders);
             }
             Message::BrowserOpenSuccess => {
                 // ignored for now
             }
             Message::LoginSafed => {
                 log::info!("Login saved");
+            }
+
+            Message::CurrentStatuses(statuses) => {
+                if let Model::Home {
+                    current_statuses, ..
+                } = self
+                {
+                    *current_statuses = statuses;
+                }
+            }
+
+            Message::Like(status_id) => {
+                log::info!("Liking {:?}", status_id);
+            }
+
+            Message::Retoot(status_id) => {
+                log::info!("Retoot {:?}", status_id);
+            }
+
+            Message::Reply(status_id) => {
+                log::info!("Reply {:?}", status_id);
             }
 
             Message::MastodonUrlInput(text) => {
@@ -133,6 +162,11 @@ impl Model {
                     mastodon_url: String::new(),
                     error: Some(s),
                 };
+            }
+            Message::Error(ErrorMessage::GettingStatusesFailed(s)) => {
+                if let Model::Home { errors, .. } = self {
+                    errors.push(s);
+                }
             }
         }
     }
@@ -195,6 +229,17 @@ fn perform_safe_login(orders: &mut impl Orders<Message>) {
             .map(|_| Message::LoginSafed)
             .map_err(|te| te.to_string())
             .map_err(ErrorMessage::LoginSafeFailed)
+            .unwrap_either_message()
+    });
+}
+
+fn perform_get_current_statuses(orders: &mut impl Orders<Message>) {
+    orders.perform_cmd(async {
+        crate::tauri::call_get_current_statuses()
+            .await
+            .map(Message::CurrentStatuses)
+            .map_err(|te| te.to_string())
+            .map_err(ErrorMessage::GettingStatusesFailed)
             .unwrap_either_message()
     });
 }

@@ -1,4 +1,7 @@
+use mastodon_async_entities::status::Status;
 use std::path::PathBuf;
+
+use crate::util::StatusId;
 
 #[derive(Debug)]
 pub enum Message {
@@ -14,6 +17,12 @@ pub enum Message {
 
     BrowserOpenSuccess,
 
+    CurrentStatuses(Vec<Status>),
+
+    Like(StatusId),
+    Retoot(StatusId),
+    Reply(StatusId),
+
     Error(ErrorMessage),
 }
 
@@ -26,6 +35,7 @@ pub enum ErrorMessage {
     FailedToParseUrl { url: String, error: String },
     BrowserOpenFailed(String),
     LoginSafeFailed(String),
+    GettingStatusesFailed(String),
 }
 
 impl From<ErrorMessage> for Message {

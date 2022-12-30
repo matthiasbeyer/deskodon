@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 use deskodon_types::authorization_code::AuthorizationCode;
+use mastodon_async_entities::status::Status;
 
 #[wasm_bindgen(module = "/public/glue.js")]
 extern "C" {
@@ -23,6 +24,9 @@ extern "C" {
 
     #[wasm_bindgen(js_name = invoke_save_login, catch)]
     async fn save_login() -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(js_name = invoke_get_current_statuses, catch)]
+    async fn get_current_statuses() -> Result<JsValue, JsValue>;
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -77,6 +81,14 @@ pub async fn call_finalize_registration(code: AuthorizationCode) -> Result<(), E
 pub async fn call_save_login() -> Result<(), Error> {
     log::debug!("calling: save_login()");
     save_login()
+        .await
+        .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
+        .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
+}
+
+pub async fn call_get_current_statuses() -> Result<Vec<Status>, Error> {
+    log::debug!("calling: get_current_statuses()");
+    get_current_statuses()
         .await
         .map_err(|jsval| Error::Tauri(format!("{:?}", jsval)))
         .and_then(|val| serde_wasm_bindgen::from_value(val).map_err(Error::from))
