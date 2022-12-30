@@ -90,6 +90,7 @@ impl Model {
                     current_statuses: vec![],
                 };
                 perform_safe_login(orders);
+                perform_get_current_statuses(orders);
             }
             Message::BrowserOpenSuccess => {
                 // ignored for now
