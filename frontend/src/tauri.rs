@@ -24,6 +24,9 @@ extern "C" {
 
     #[wasm_bindgen(js_name = invoke_save_login, catch)]
     async fn save_login() -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(js_name = invoke_get_current_statuses, catch)]
+    async fn get_current_statuses() -> Result<JsValue, JsValue>;
 }
 
 #[derive(Debug, thiserror::Error)]

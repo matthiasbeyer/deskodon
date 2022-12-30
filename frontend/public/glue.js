@@ -23,3 +23,7 @@ export async function invoke_finalize_registration(code) {
 export async function invoke_save_login() {
     return await invoke("save_login");
 }
+
+export async function invoke_get_current_statuses() {
+    return await invoke("get_current_statuses");
+}
