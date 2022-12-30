@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use deskodon_types::authorization_code::AuthorizationCode;
-use mastodon_async::entities::status::Status;
+use mastodon_async_entities::status::Status;
 use seed::{prelude::Orders, Url};
 
 use crate::message::{ErrorMessage, Message, UnwrapEitherMessage};

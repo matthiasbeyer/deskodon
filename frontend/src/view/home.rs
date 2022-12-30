@@ -1,5 +1,5 @@
-use mastodon_async::entities::prelude::Account;
-use mastodon_async::entities::status::Status;
+use mastodon_async_entities::prelude::Account;
+use mastodon_async_entities::status::Status;
 use seed::prelude::*;
 use seed::*;
 

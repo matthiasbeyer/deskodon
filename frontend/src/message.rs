@@ -1,4 +1,4 @@
-use mastodon_async::entities::status::Status;
+use mastodon_async_entities::status::Status;
 use std::path::PathBuf;
 
 use crate::util::StatusId;

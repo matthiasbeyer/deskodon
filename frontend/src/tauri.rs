@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 use deskodon_types::authorization_code::AuthorizationCode;
-use mastodon_async::entities::status::Status;
+use mastodon_async_entities::status::Status;
 
 #[wasm_bindgen(module = "/public/glue.js")]
 extern "C" {
