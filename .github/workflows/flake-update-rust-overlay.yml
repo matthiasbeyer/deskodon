@@ -4,8 +4,8 @@ on:
   repository_dispatch:
   workflow_dispatch:
   schedule:
-    # 04:05 on monday
-    - cron:  '5 4 * * 1'
+    # 03:15 every 1st of the month
+    - cron:  '15 3 1 * *'
 
 jobs:
   lockfile:
