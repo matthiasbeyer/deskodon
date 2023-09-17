@@ -2,7 +2,7 @@
 
 Mastodon GUI client for the desktop.
 
-Built with Rust and tauri.
+Built with Rust.
 
 ## License
 
