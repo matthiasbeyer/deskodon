@@ -37,7 +37,7 @@
         });
         craneLib = (crane.mkLib pkgs).overrideToolchain rustTarget;
 
-        tomlInfo = craneLib.crateNameFromCargoToml { cargoToml = ./Cargo.toml; };
+        tomlInfo = craneLib.crateNameFromCargoToml { cargoToml = ./app/Cargo.toml; };
 
         nativeBuildInputs = with pkgs; [
           curl
@@ -90,39 +90,57 @@
             filter = filterPath;
           };
 
-        deskodonFrontendArtifacts = craneLib.buildDepsOnly {
-          pname = "deskodon-frontend";
+        deskodonLibArtifacts = craneLib.buildDepsOnly {
+          pname = "deskodon-lib";
+          inherit (tomlInfo) version;
           inherit src;
 
           doCheck = false;
-          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
+          cargoExtraArgs = "--all-features -p deskodon-lib";
+        };
+
+        deskodonFrontendArtifacts = craneLib.buildDepsOnly {
+          pname = "deskodon-frontend";
+          inherit (tomlInfo) version;
+          inherit src;
+
+          doCheck = false;
+          cargoExtraArgs = "--all-features -p deskodon-frontend";
         };
 
         deskodonArtifacts = craneLib.buildDepsOnly {
-          inherit (tomlInfo) pname;
+          pname = "deskodon";
+          inherit (tomlInfo) version;
           inherit src;
           inherit nativeBuildInputs;
           buildInputs = guiBuildInputs;
         };
 
-        deskodon-frontend = craneLib.buildPackage {
+        deskodon-lib = craneLib.buildPackage {
+          pname = "deskodon-lib";
           inherit (tomlInfo) version;
           inherit src;
           inherit nativeBuildInputs;
-          pname = "deskodon-frontend";
 
-          # Override crane's use of --workspace, which tries to build everything.
-          cargoCheckCommand = "cargo check --release";
-          cargoBuildCommand = "cargo build --release";
-          cargoTestCommand = "cargo test --profile release -p deskodon-frontend --lib";
+          doCheck = false;
+          cargoArtifacts = deskodonLibArtifacts;
+          cargoExtraArgs = "-p deskodon-lib";
+        };
+
+        deskodon-frontend = craneLib.buildPackage {
+          pname = "deskodon-frontend";
+          inherit (tomlInfo) version;
+          inherit src;
+          inherit nativeBuildInputs;
 
           doCheck = false;
           cargoArtifacts = deskodonFrontendArtifacts;
-          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
+          cargoExtraArgs = "-p deskodon-frontend";
         };
 
         deskodon = craneLib.buildPackage {
-          inherit (tomlInfo) pname version;
+          pname = "deskodon";
+          inherit (tomlInfo) version;
           inherit src;
           inherit nativeBuildInputs;
 
@@ -137,7 +155,8 @@
           inherit deskodon-frontend;
 
           deskodon-clippy = craneLib.cargoClippy {
-            inherit (tomlInfo) pname;
+            pname = "deskodon";
+            inherit (tomlInfo) version;
             inherit src;
             inherit nativeBuildInputs;
             buildInputs = guiBuildInputs;
@@ -147,7 +166,7 @@
           };
 
           deskodon-fmt = craneLib.cargoFmt {
-            inherit (tomlInfo) pname;
+            pname = "deskodon";
             inherit src;
             inherit nativeBuildInputs;
             buildInputs = guiBuildInputs;
@@ -156,7 +175,9 @@
 
         packages = {
           inherit deskodon;
+          inherit deskodon-lib;
           inherit deskodon-frontend;
+
           default = packages.deskodon;
         };
 
