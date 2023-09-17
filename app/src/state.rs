@@ -10,8 +10,7 @@ pub struct State {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct StateInner {
-}
+struct StateInner {}
 
 impl State {
     pub async fn load_from_path(path: PathBuf) -> Result<Self, Error> {
@@ -44,4 +43,3 @@ impl State {
             })
     }
 }
-

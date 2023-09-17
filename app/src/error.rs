@@ -53,5 +53,4 @@ pub enum Error {
 
     #[error("Failed to join application tasks")]
     Join(#[source] tokio::task::JoinError),
-
 }

@@ -40,5 +40,4 @@ impl Configuration {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct Config {
-}
+struct Config {}

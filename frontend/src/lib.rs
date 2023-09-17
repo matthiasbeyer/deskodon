@@ -1,7 +1,7 @@
 slint::include_modules!();
 
-use deskodon_lib::EventSender;
 use deskodon_lib::CommandReceiver;
+use deskodon_lib::EventSender;
 
 pub mod error;
 
