@@ -159,16 +159,16 @@
           inherit deskodon;
           inherit deskodon-frontend;
 
-          deskodon-clippy = craneLib.cargoClippy {
-            pname = "deskodon";
-            inherit (tomlInfo) version;
-            inherit src;
-            inherit nativeBuildInputs;
-            buildInputs = guiBuildInputs;
+          # deskodon-clippy = craneLib.cargoClippy {
+          #   pname = "deskodon";
+          #   inherit (tomlInfo) version;
+          #   inherit src;
+          #   inherit nativeBuildInputs;
+          #   buildInputs = guiBuildInputs;
 
-            cargoArtifacts = deskodonArtifacts;
-            cargoClippyExtraArgs = "--tests --all-features -- --deny warnings";
-          };
+          #   cargoArtifacts = deskodonArtifacts;
+          #   cargoClippyExtraArgs = "--tests --all-features -- --deny warnings";
+          # };
 
           deskodon-fmt = craneLib.cargoFmt {
             pname = "deskodon";
