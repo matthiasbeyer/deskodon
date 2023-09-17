@@ -5,6 +5,16 @@ pub enum Error {
     #[error("Error in GUI")]
     Gui(#[source] deskodon_frontend::error::Error),
 
+    #[error("Failed to find directory name for state file: {}", .path.display())]
+    FindingStateDirName { path: PathBuf },
+
+    #[error("Failed to create directory for state: {}", .path.display())]
+    CreatingStateDir {
+        #[source]
+        error: std::io::Error,
+        path: PathBuf,
+    },
+
     #[error("Failed to read configuration")]
     ReadingConfig(#[source] std::io::Error),
 
