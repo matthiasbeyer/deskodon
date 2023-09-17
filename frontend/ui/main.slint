@@ -4,16 +4,21 @@ import { MenuBar } from "menubar.slint";
 import { SideBar } from "sidebar.slint";
 
 import { AboutPage } from "pages/about.slint";
+import { LoadingPage } from "pages/loading.slint";
+import { LoginPage } from "pages/login.slint";
 import { MainPage } from "pages/main.slint";
 import { MyProfilePage } from "pages/my_profile.slint";
 import { SettingsPage } from "pages/settings.slint";
 
 export component GuiMain inherits Window {
     title: "deskodon";
-    background: white;
+    background: gray;
 
     preferred-width: 100%;
     preferred-height: 100%;
+
+    property <bool> loaded;
+    property <bool> loggedin;
 
     callback post_text_content <=> main-page.post_text_content;
 
@@ -22,7 +27,16 @@ export component GuiMain inherits Window {
         preferred-width: 100%;
         preferred-height: 100%;
 
+        login := LoginPage {
+            visible: !loggedin;
+        }
+
+        loading := LoadingPage {
+            visible: loggedin && !loaded;
+        }
+
         MenuBar {
+            visible: loggedin && loaded;
             Text {
                 text: "deskodon";
             }
@@ -38,7 +52,10 @@ export component GuiMain inherits Window {
             }
         }
 
+
         HorizontalBox {
+            visible: loggedin && loaded;
+
             spacing: 5px;
             preferred-width: 1200px;
             preferred-height: 800px;
