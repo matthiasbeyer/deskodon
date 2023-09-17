@@ -2,13 +2,11 @@ import { Button, HorizontalBox } from "std-widgets.slint";
 
 import { Input } from "../input.slint";
 import { Page } from "../page.slint";
-import { ConnectBox } from "../connectbox.slint";
 
 export component MainPage inherits Page {
     title: "Main";
 
     callback post_text_content <=> input.post_text_content;
-    callback start_connecting <=> connect-box.start_connecting;
 
     HorizontalBox {
         preferred-width: 100%;
@@ -19,10 +17,6 @@ export component MainPage inherits Page {
 
         VerticalLayout {
             min-width: 100px;
-
-            connect-box := ConnectBox {
-                max-height: 50px;
-            }
 
             input := Input {
                 min-height: 50px;
