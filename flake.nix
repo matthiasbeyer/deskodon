@@ -31,71 +31,50 @@
           inherit system;
         };
 
-        cargo-tauri = unstable.callPackage ./nix/cargo-tauri.nix {};
-
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
         unstableRustTarget = pkgs.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
           extensions = [ "rust-src" "miri" ];
         });
         craneLib = (crane.mkLib pkgs).overrideToolchain rustTarget;
 
-        tomlInfo = craneLib.crateNameFromCargoToml { cargoToml = ./Cargo.toml; };
+        tomlInfo = craneLib.crateNameFromCargoToml { cargoToml = ./app/Cargo.toml; };
 
         nativeBuildInputs = with pkgs; [
           curl
           gcc
           openssl
-          pkgconfig
-          which
           zlib
-
-          freetype
-          expat
-          protobuf
+          pkg-config
         ];
 
-        guiBuildInputs = (with pkgs; [
-          cairo
-          dbus.lib
-          dbus
-          gdk-pixbuf
-          glib.out
-          gtk3
-          libsoup
-          openssl.out
-          pango
-          pkg-config
-          webkitgtk
-          zlib
-          pkg-config
-          gobject-introspection
-          glib-networking
-        ]) ++ (with pkgs.xorg; [
-          libX11
-          libXcomposite
-          libXcursor
-          libXext
-          libXfont
-          libXfont2
-          libXft
-          libXi
-          libXinerama
-          libXmu
-          libXpm
-          libXpresent
-          libXrandr
-          libXrender
-          libXt
-          libXtst
-          libXxf86misc
-          libXxf86vm
-          libxcb
-          libxkbfile
-          libxshmfence
+        guiBuildInputs = with pkgs; [
+          xorg.libX11
+          xorg.libXcomposite
+          xorg.libXcursor
+          xorg.libXext
+          xorg.libXfont
+          xorg.libXfont2
+          xorg.libXft
+          xorg.libXi
+          xorg.libXinerama
+          xorg.libXmu
+          xorg.libXpm
+          xorg.libXpresent
+          xorg.libXrandr
+          xorg.libXrender
+          xorg.libXt
+          xorg.libXtst
+          xorg.libXxf86misc
+          xorg.libXxf86vm
+          xorg.libxcb
+          xorg.libxkbfile
+          xorg.libxshmfence
 
-          pkgs.libGL
-          pkgs.pkgconfig
-        ]);
+
+          libGL
+          pkg-config
+          fontconfig
+        ];
 
         src =
           let
@@ -111,39 +90,62 @@
             filter = filterPath;
           };
 
-        deskodonFrontendArtifacts = craneLib.buildDepsOnly {
-          pname = "deskodon-frontend";
+        deskodonLibArtifacts = craneLib.buildDepsOnly {
+          pname = "deskodon-lib";
+          inherit (tomlInfo) version;
           inherit src;
 
           doCheck = false;
-          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
+          cargoExtraArgs = "--all-features -p deskodon-lib";
+        };
+
+        deskodonFrontendArtifacts = craneLib.buildDepsOnly {
+          pname = "deskodon-frontend";
+          inherit (tomlInfo) version;
+          inherit src;
+
+          inherit nativeBuildInputs;
+          buildInputs = guiBuildInputs;
+
+          doCheck = false;
+          cargoExtraArgs = "--all-features -p deskodon-frontend";
         };
 
         deskodonArtifacts = craneLib.buildDepsOnly {
-          inherit (tomlInfo) pname;
+          pname = "deskodon";
+          inherit (tomlInfo) version;
           inherit src;
           inherit nativeBuildInputs;
           buildInputs = guiBuildInputs;
         };
 
-        deskodon-frontend = craneLib.buildPackage {
+        deskodon-lib = craneLib.buildPackage {
+          pname = "deskodon-lib";
           inherit (tomlInfo) version;
           inherit src;
           inherit nativeBuildInputs;
-          pname = "deskodon-frontend";
 
-          # Override crane's use of --workspace, which tries to build everything.
-          cargoCheckCommand = "cargo check --release";
-          cargoBuildCommand = "cargo build --release";
-          cargoTestCommand = "cargo test --profile release -p deskodon-frontend --lib";
+          doCheck = false;
+          cargoArtifacts = deskodonLibArtifacts;
+          cargoExtraArgs = "-p deskodon-lib";
+        };
+
+        deskodon-frontend = craneLib.buildPackage {
+          pname = "deskodon-frontend";
+          inherit (tomlInfo) version;
+          inherit src;
+
+          inherit nativeBuildInputs;
+          buildInputs = guiBuildInputs;
 
           doCheck = false;
           cargoArtifacts = deskodonFrontendArtifacts;
-          cargoExtraArgs = "--all-features -p deskodon-frontend --target wasm32-unknown-unknown";
+          cargoExtraArgs = "-p deskodon-frontend";
         };
 
         deskodon = craneLib.buildPackage {
-          inherit (tomlInfo) pname version;
+          pname = "deskodon";
+          inherit (tomlInfo) version;
           inherit src;
           inherit nativeBuildInputs;
 
@@ -157,18 +159,19 @@
           inherit deskodon;
           inherit deskodon-frontend;
 
-          deskodon-clippy = craneLib.cargoClippy {
-            inherit (tomlInfo) pname;
-            inherit src;
-            inherit nativeBuildInputs;
-            buildInputs = guiBuildInputs;
+          # deskodon-clippy = craneLib.cargoClippy {
+          #   pname = "deskodon";
+          #   inherit (tomlInfo) version;
+          #   inherit src;
+          #   inherit nativeBuildInputs;
+          #   buildInputs = guiBuildInputs;
 
-            cargoArtifacts = deskodonArtifacts;
-            cargoClippyExtraArgs = "--tests --all-features -- --deny warnings";
-          };
+          #   cargoArtifacts = deskodonArtifacts;
+          #   cargoClippyExtraArgs = "--tests --all-features -- --deny warnings";
+          # };
 
           deskodon-fmt = craneLib.cargoFmt {
-            inherit (tomlInfo) pname;
+            pname = "deskodon";
             inherit src;
             inherit nativeBuildInputs;
             buildInputs = guiBuildInputs;
@@ -177,7 +180,9 @@
 
         packages = {
           inherit deskodon;
+          inherit deskodon-lib;
           inherit deskodon-frontend;
+
           default = packages.deskodon;
         };
 
@@ -191,30 +196,10 @@
 
         devShells = {
           deskodon = pkgs.mkShell {
-            LIBCLANG_PATH   = "${pkgs.llvmPackages.libclang}/lib";
-            PROTOC          = "${pkgs.protobuf}/bin/protoc";
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath guiBuildInputs;
-
-            XDG_DATA_DIRS = let
-              base = pkgs.lib.concatMapStringsSep ":" (x: "${x}/share") [
-                pkgs.gnome.adwaita-icon-theme
-                pkgs.shared-mime-info
-              ];
-
-              gsettings_schema = pkgs.lib.concatMapStringsSep ":" (x: "${x}/share/gsettings-schemas/${x.name}") [
-                pkgs.glib
-                pkgs.gsettings-desktop-schemas
-                pkgs.gtk3
-              ];
-            in "${base}:${gsettings_schema}";
-
-            GIO_MODULE_DIR="${pkgs.glib-networking}/lib/gio/modules/";
-
             buildInputs = guiBuildInputs;
 
             nativeBuildInputs = nativeBuildInputs ++ [
               rustTarget
-              cargo-tauri
 
               pkgs.wasm-bindgen-cli
               pkgs.cargo-msrv

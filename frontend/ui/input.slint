@@ -1,0 +1,43 @@
+import { TextEdit, Button } from "std-widgets.slint";
+
+component TextInput inherits VerticalLayout {
+    spacing: 5px;
+
+    callback post_text_content(string);
+
+    text_content := TextEdit {
+        enabled: true;
+        read-only: false;
+    }
+
+    Rectangle {
+        HorizontalLayout {
+            Button {
+                text: "Attachments";
+            }
+
+            Button {
+                text: "Cancel";
+
+                clicked => {
+                    text_content.text = "";
+                }
+            }
+
+            Button {
+                text: "Post";
+
+                clicked => {
+                    root.post_text_content(text_content.text)
+                }
+            }
+        }
+    }
+}
+
+export component Input {
+    callback post_text_content <=> text_input.post_text_content;
+
+    text_input := TextInput {
+    }
+}
