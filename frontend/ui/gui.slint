@@ -1,0 +1,88 @@
+import { Button, HorizontalBox } from "std-widgets.slint";
+
+import { MenuBar } from "menubar.slint";
+import { SideBar } from "sidebar.slint";
+
+import { AboutPage } from "pages/about.slint";
+import { MainPage } from "pages/main.slint";
+import { MyProfilePage } from "pages/my_profile.slint";
+import { SettingsPage } from "pages/settings.slint";
+
+export component AppWindow inherits Window {
+    title: "distrox";
+    background: white;
+
+    preferred-width: 100%;
+    preferred-height: 100%;
+
+    callback post_text_content <=> main-page.post_text_content;
+    callback start_connecting <=> main-page.start_connecting;
+
+    VerticalLayout {
+        spacing: 5px;
+        preferred-width: 100%;
+        preferred-height: 100%;
+
+        MenuBar {
+            Text {
+                text: "distrox";
+            }
+
+            Button {
+                text: "Click!";
+                // does nothing
+            }
+
+            Button {
+                text: "Me!";
+                // does nothing
+            }
+        }
+
+        HorizontalBox {
+            spacing: 5px;
+            preferred-width: 1200px;
+            preferred-height: 800px;
+
+            Rectangle {
+                min-width: 10px;
+                max-width: 50px;
+                // spacing
+            }
+
+            side-bar := SideBar {
+                title: "";
+                model: [
+                    "Main",
+                    "My Profile",
+                    "Settings",
+                    "About",
+                ];
+            }
+
+            Rectangle {
+                clip: true;
+                main-page := MainPage {
+                    x: side-bar.current-item == 0 ? 0 : side-bar.current-item < 0 ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+                }
+
+                profile-page := MyProfilePage {
+                    x: side-bar.current-item == 1 ? 0 : side-bar.current-item < 1 ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+                }
+
+                settings-page := SettingsPage {
+                    x: side-bar.current-item == 2 ? 0 : side-bar.current-item < 2 ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+                }
+
+                about-page := AboutPage {
+                    x: side-bar.current-item == 3 ? 0 : side-bar.current-item < 3 ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+                }
+            }
+        }
+    }
+
+}

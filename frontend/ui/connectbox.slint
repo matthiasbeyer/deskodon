@@ -1,0 +1,39 @@
+import { TextEdit, Button } from "std-widgets.slint";
+
+component TextInput inherits VerticalLayout {
+    spacing: 5px;
+
+    callback start_connecting(string);
+
+    HorizontalLayout {
+        text_content := TextEdit {
+            enabled: true;
+            read-only: false;
+
+            min-width: 100px;
+        }
+
+        Button {
+            text: "Cancel";
+
+            clicked => {
+                text_content.text = "";
+            }
+        }
+
+        Button {
+            text: "Connect";
+
+            clicked => {
+                root.start_connecting(text_content.text)
+            }
+        }
+    }
+}
+
+export component ConnectBox {
+    callback start_connecting <=> text_input.start_connecting ;
+
+    text_input := TextInput {
+    }
+}

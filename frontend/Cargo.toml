@@ -3,17 +3,13 @@ name = "deskodon-frontend"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+build = "build.rs"
 
 [dependencies]
-deskodon-types = { version = "0.1.0", path = "../types" }
-js-sys = "0.3.64"
-log = "0.4"
-seed = "0.9.2"
-serde-wasm-bindgen = "0.5.0"
+slint = "1.2"
 thiserror = "1"
-url = "2.4.1"
-wasm-bindgen = "0.2.87"
-wasm-bindgen-futures = "0.4.37"
-wasm-logger = "0.2"
 
+deskodon-lib = { path = "../lib" }
+
+[build-dependencies]
+slint-build = "1.2.0"

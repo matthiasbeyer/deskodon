@@ -2,8 +2,8 @@
 resolver = "2"
 
 members = [
+    "app",
     "frontend",
-    "src-tauri",
-    "types",
+    "lib",
 ]
 
