@@ -1,0 +1,20 @@
+import { GridBox, ListView, ScrollView, VerticalBox } from "std-widgets.slint";
+
+export component Page inherits VerticalBox {
+    in property<string> title: "title";
+    in property<string> description: "description";
+
+    HorizontalLayout {
+        height: 24px;
+
+        Text {
+            font-size: 20px;
+            text <=> root.title;
+        }
+
+        // Spacer
+        Rectangle {}
+    }
+
+    @children
+}

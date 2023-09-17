@@ -1,0 +1,14 @@
+export component MenuBar inherits HorizontalLayout {
+    callback action();
+
+    in property <brush> background;
+    in property <string> title;
+    in property <image> action-icon;
+    in property <string> action-text;
+    in property <bool> action-enabled: false;
+
+    spacing: 5px;
+    max-height: 20px;
+
+    @children
+}
