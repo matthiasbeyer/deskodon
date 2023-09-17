@@ -196,7 +196,8 @@
 
         devShells = {
           deskodon = pkgs.mkShell {
-            buildInputs = guiBuildInputs;
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath guiBuildInputs;
+            buildInputs = nativeBuildInputs ++ guiBuildInputs;
 
             nativeBuildInputs = nativeBuildInputs ++ [
               rustTarget
