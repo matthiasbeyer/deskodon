@@ -16,8 +16,7 @@ pub fn run(
             let xdg =
                 xdg::BaseDirectories::with_prefix("deskodon").map_err(ApplicationError::Xdg)?;
 
-            let app = Application::new(xdg, gui, event_receiver).await?;
-            app.run().await
+            Application::new(xdg, gui, event_receiver).await?.run().await
         })
         .map_err(Error::Application)
     })
