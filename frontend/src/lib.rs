@@ -36,6 +36,7 @@ impl Gui {
             let _ = event_sender.blocking_send(Event::Login {
                 instance: instance.to_string(),
             });
+            tracing::debug!("event sent");
         })
     }
 }
