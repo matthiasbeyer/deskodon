@@ -19,11 +19,20 @@ impl Gui {
     }
 
     pub fn handle(&self) -> GuiHandle {
-        GuiHandle { gui: self.gui.as_weak() }
+        GuiHandle {
+            gui: self.gui.as_weak(),
+        }
     }
 
     pub fn run(self) -> Result<(), crate::error::Error> {
+        self.install_login_callbacks();
         self.gui.run().map_err(crate::error::Error::from)
+    }
+
+    fn install_login_callbacks(&self) {
+        self.gui.on_login(|instance, username| {
+            tracing::info!(?instance, ?username, "login() invoked");
+        })
     }
 }
 

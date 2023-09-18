@@ -1071,6 +1071,7 @@ dependencies = [
  "slint",
  "slint-build",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]

@@ -21,17 +21,18 @@ export component GuiMain inherits Window {
     property <bool> loggedin;
 
     callback post_text_content <=> main-page.post_text_content;
+    callback login <=> login_page.login;
 
     VerticalLayout {
         spacing: 5px;
         preferred-width: 100%;
         preferred-height: 100%;
 
-        login := LoginPage {
+        login_page := LoginPage {
             visible: !loggedin;
         }
 
-        loading := LoadingPage {
+        loading_page := LoadingPage {
             visible: loggedin && !loaded;
         }
 

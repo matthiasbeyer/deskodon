@@ -13,7 +13,6 @@ pub fn run(
     std::thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().map_err(ApplicationError::AsyncRuntimeCreation)?;
         rt.block_on(async move {
-            tracing_subscriber::fmt::init();
             let xdg =
                 xdg::BaseDirectories::with_prefix("deskodon").map_err(ApplicationError::Xdg)?;
 
@@ -41,7 +40,6 @@ impl Application {
                 xdg.get_config_file("config.toml"),
                 gui.clone(),
             ),
-
             crate::state::State::load_from_path(xdg.get_state_file("state.toml"), gui.clone()),
         )?;
 

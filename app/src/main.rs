@@ -3,8 +3,8 @@ mod configuration;
 mod error;
 mod state;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
     let (event_sender, event_receiver) = tokio::sync::mpsc::channel(100);
 
     let gui = deskodon_frontend::Gui::new(event_sender);

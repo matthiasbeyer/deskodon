@@ -8,6 +8,7 @@ build = "build.rs"
 [dependencies]
 slint = "1.2"
 thiserror = "1"
+tracing = "0.1"
 
 deskodon-lib = { path = "../lib" }
 
