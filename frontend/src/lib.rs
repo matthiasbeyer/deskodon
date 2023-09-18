@@ -1,6 +1,6 @@
 slint::include_modules!();
 
-use deskodon_lib::EventSender;
+use deskodon_lib::{Event, EventSender};
 use slint::Weak;
 
 pub mod error;
@@ -30,8 +30,13 @@ impl Gui {
     }
 
     fn install_login_callbacks(&self) {
-        self.gui.on_login(|instance, username| {
+        let event_sender = self.event_sender.clone();
+        self.gui.on_login(move |instance, username| {
             tracing::info!(?instance, ?username, "login() invoked");
+            let _ = event_sender.blocking_send(Event::Login {
+                instance: instance.to_string(),
+                username: username.to_string(),
+            });
         })
     }
 }

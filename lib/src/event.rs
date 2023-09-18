@@ -1,2 +1,7 @@
 #[derive(Debug)]
-pub enum Event {}
+pub enum Event {
+    Login {
+        instance: String,
+        username: String,
+    }
+}
