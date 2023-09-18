@@ -43,7 +43,10 @@ impl Configuration {
             .await
             .map_err(ApplicationError::ReadingConfig)
             .and_then(|text| toml::from_str(&text).map_err(ApplicationError::ParsingConfig))
-            .map(|config| Configuration { path, config })
+            .map(|config| {
+                tracing::debug!("Configuration instantiated");
+                Configuration { path, config }
+            })
     }
 
     pub async fn save(&self) -> Result<(), ApplicationError> {
