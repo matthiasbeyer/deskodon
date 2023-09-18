@@ -31,11 +31,10 @@ impl Gui {
 
     fn install_login_callbacks(&self) {
         let event_sender = self.event_sender.clone();
-        self.gui.on_login(move |instance, username| {
-            tracing::info!(?instance, ?username, "login() invoked");
+        self.gui.on_login(move |instance| {
+            tracing::info!(?instance, "login() invoked");
             let _ = event_sender.blocking_send(Event::Login {
                 instance: instance.to_string(),
-                username: username.to_string(),
             });
         })
     }
@@ -53,5 +52,21 @@ impl GuiHandle {
 
     pub fn notify_creating_default_config(&self) {
         // TODO
+    }
+
+    pub fn notify_logging_in(&self) {
+    }
+
+    pub fn notify_login_succeeded(&self) {
+    }
+
+    pub fn notify_login_failed(&self, reason: String) {
+    }
+
+    pub fn display_authorization_url(&self, url: url::Url) {
+        let gui = self.gui.upgrade().unwrap();
+        gui.set_loggedin(false);
+        gui.set_display_authorization(true);
+        gui.set_authorization_url(url.to_string().into());
     }
 }

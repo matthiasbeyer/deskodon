@@ -10,20 +10,29 @@ pub struct State {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct StateInner {}
+enum StateInner {
+    None,
+
+    WaitingForAuthorizationUrl {
+        url: url::Url,
+    }
+}
 
 impl State {
     pub async fn load_from_path(
         path: PathBuf,
         gui: deskodon_frontend::GuiHandle
     ) -> Result<Self, ApplicationError> {
-        let text = if path.exists() {
-            tokio::fs::read_to_string(&path)
+        if path.exists() {
+            let text = tokio::fs::read_to_string(&path)
                 .await
                 .map_err(|error| ApplicationError::ReadingState {
                     error,
                     path: path.to_path_buf(),
-                })?
+                })?;
+            toml::from_str(&text)
+                .map_err(ApplicationError::ParsingState)
+                .map(|state_inner| State { path, state_inner })
         } else {
             let state_dir = path.parent().ok_or_else(|| ApplicationError::FindingStateDirName {
                 path: path.to_path_buf(),
@@ -48,12 +57,11 @@ impl State {
                     source,
                 })?;
 
-            String::new()
-        };
-
-        toml::from_str(&text)
-            .map_err(ApplicationError::ParsingState)
-            .map(|state_inner| State { path, state_inner })
+            Ok(State {
+                path,
+                state_inner: StateInner::None,
+            })
+        }
     }
 
     pub async fn save(&self) -> Result<(), ApplicationError> {
@@ -76,5 +84,9 @@ impl State {
                 path: self.path.to_path_buf(),
                 source,
             })
+    }
+
+    pub fn set_to_waiting_for_auth(&mut self, url: url::Url) {
+        self.state_inner = StateInner::WaitingForAuthorizationUrl { url };
     }
 }

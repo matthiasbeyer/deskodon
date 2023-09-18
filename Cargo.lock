@@ -1060,6 +1060,7 @@ dependencies = [
  "toml 0.8.0",
  "tracing",
  "tracing-subscriber",
+ "url",
  "xdg",
 ]
 
@@ -1072,6 +1073,7 @@ dependencies = [
  "slint-build",
  "thiserror",
  "tracing",
+ "url",
 ]
 
 [[package]]
@@ -4805,6 +4807,7 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]

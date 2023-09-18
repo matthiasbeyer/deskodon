@@ -6,6 +6,7 @@ import { SideBar } from "sidebar.slint";
 import { AboutPage } from "pages/about.slint";
 import { LoadingPage } from "pages/loading.slint";
 import { LoginPage } from "pages/login.slint";
+import { AuthorizationUrlPage } from "pages/authorization.slint";
 import { MainPage } from "pages/main.slint";
 import { MyProfilePage } from "pages/my_profile.slint";
 import { SettingsPage } from "pages/settings.slint";
@@ -17,10 +18,11 @@ export component GuiMain inherits Window {
     preferred-width: 100%;
     preferred-height: 100%;
 
-    property <bool> loaded;
-    property <bool> loggedin;
+    in property <bool> loaded;
+    in property <bool> loggedin;
+    in property <bool> display_authorization;
+    in property <string> authorization_url;
 
-    callback post_text_content <=> main-page.post_text_content;
     callback login <=> login_page.login;
 
     VerticalLayout {
@@ -30,6 +32,10 @@ export component GuiMain inherits Window {
 
         login_page := LoginPage {
             visible: !loggedin;
+        }
+
+        authorization_display_page := AuthorizationUrlPage {
+            visible: !loggedin && display_authorization;
         }
 
         loading_page := LoadingPage {

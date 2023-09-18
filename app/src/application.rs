@@ -53,6 +53,29 @@ impl Application {
     pub async fn run(mut self) -> Result<(), ApplicationError> {
         while let Some(event) = self.event_receiver.recv().await {
             tracing::info!(?event, "Received event");
+
+            match event {
+                deskodon_lib::Event::Login { instance } => {
+                    self.gui.notify_logging_in();
+                    let registration = mastodon_async::Registration::new(instance)
+                        .client_name("deskodon")
+                        .build()
+                        .await
+                        .unwrap();
+
+                    self.gui.notify_login_succeeded();
+                    let authorization_url =
+                        url::Url::parse(&registration.authorize_url().unwrap()).unwrap();
+
+                    self.gui.display_authorization_url(authorization_url.clone());
+
+                    {
+                        let mut state = self.app_state.lock().await;
+                        state.state.set_to_waiting_for_auth(authorization_url);
+                        state.state.save().await?;
+                    }
+                }
+            }
         }
 
         Ok(())

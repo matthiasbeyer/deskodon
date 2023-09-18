@@ -1,0 +1,23 @@
+import { Page } from "../page.slint";
+import { TextEdit } from "std-widgets.slint";
+
+export component AuthorizationUrlPage inherits Page {
+    title: "Authorize";
+
+    in-out property <string> url;
+
+    preferred-width: 100%;
+    preferred-height: 100%;
+
+    VerticalLayout {
+        spacing: 5px;
+
+        instance := TextEdit {
+            text: root.url;
+            read-only: true;
+
+            font-size: 20px;
+            width: 100%;
+        }
+    }
+}

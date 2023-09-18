@@ -6,7 +6,7 @@ export component LoginPage inherits Page {
 
     in-out property <bool> enabled;
 
-    callback login(string, string);
+    callback login(string);
 
     preferred-width: 100%;
     preferred-height: 100%;
@@ -21,18 +21,11 @@ export component LoginPage inherits Page {
             width: 100%;
         }
 
-        user := TextEdit {
-            font-size: 20px;
-            text: "aliceOrBob";
-            read-only: false;
-            width: 100%;
-        }
-
         login := Button {
             text: "Login";
 
             clicked => {
-                root.login(instance.text, user.text)
+                root.login(instance.text)
             }
         }
     }
