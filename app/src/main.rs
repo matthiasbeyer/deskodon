@@ -9,13 +9,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let gui = deskodon_frontend::Gui::new(event_sender);
     let gui_handle = gui.handle();
-    let gui_res = gui.run().map_err(crate::error::Error::Gui);
     let app_task = crate::application::run(gui_handle, event_receiver);
+    let gui_res = gui.run().map_err(crate::error::Error::Gui);
     let app_res = app_task.join();
 
     match (app_res, gui_res) {
         (Ok(_), Ok(_)) => Ok(()),
-        (Err(error), _) => todo!(),
-        (_, Err(error)) => todo!(),
+        (Err(error), _) => {
+            tracing::error!(?error);
+            Ok(())
+        }
+        (_, Err(error)) => {
+            tracing::error!(?error);
+            Ok(())
+        }
     }
 }
