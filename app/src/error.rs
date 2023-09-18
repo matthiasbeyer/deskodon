@@ -11,6 +11,9 @@ pub enum Error {
 
 #[derive(Debug, thiserror::Error)]
 pub enum ApplicationError {
+    #[error("Application booting failed")]
+    BootFailed,
+
     #[error("Failed to create async runtime")]
     AsyncRuntimeCreation(#[source] std::io::Error),
 

@@ -23,7 +23,13 @@ export component GuiMain inherits Window {
     in property <bool> display_authorization;
     in property <string> authorization_url;
 
+
     callback login <=> login_page.login;
+    callback notify_gui_booted();
+
+    init => {
+        notify_gui_booted()
+    }
 
     callback show_login_page();
     show_login_page() => {

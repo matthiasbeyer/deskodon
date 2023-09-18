@@ -25,8 +25,18 @@ impl Gui {
     }
 
     pub fn run(self) -> Result<(), crate::error::Error> {
+        self.install_init_callback();
         self.install_login_callbacks();
         self.gui.run().map_err(crate::error::Error::from)
+    }
+
+    fn install_init_callback(&self) {
+        let event_sender = self.event_sender.clone();
+        self.gui.on_notify_gui_booted(move || {
+            tracing::info!("notify_gui_booted() invoked");
+            let _ = event_sender.blocking_send(Event::GuiBooted);
+            tracing::debug!("Event sent");
+        })
     }
 
     fn install_login_callbacks(&self) {
@@ -48,6 +58,7 @@ pub struct GuiHandle {
 
 impl GuiHandle {
     pub fn show_login_page(&self) {
+        tracing::debug!("Showing login page");
         let gui = self.gui.upgrade().unwrap();
         gui.invoke_show_login_page();
     }

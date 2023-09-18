@@ -10,7 +10,12 @@ pub struct State {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-enum StateInner {
+struct StateInner {
+    app_state: ApplicationState,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+enum ApplicationState {
     None,
 
     WaitingForAuthorizationUrl {
@@ -63,7 +68,9 @@ impl State {
 
             Ok(State {
                 path,
-                state_inner: StateInner::None,
+                state_inner: StateInner {
+                    app_state: ApplicationState::None,
+                },
             })
         }
     }
@@ -92,6 +99,6 @@ impl State {
     }
 
     pub fn set_to_waiting_for_auth(&mut self, url: url::Url) {
-        self.state_inner = StateInner::WaitingForAuthorizationUrl { url };
+        self.state_inner.app_state = ApplicationState::WaitingForAuthorizationUrl { url };
     }
 }
