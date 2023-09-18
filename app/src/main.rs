@@ -5,20 +5,17 @@ mod state;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::fmt::init();
-    let xdg = xdg::BaseDirectories::with_prefix("deskodon")?;
-
-    let (command_sender, command_receiver) = tokio::sync::mpsc::channel(100);
     let (event_sender, event_receiver) = tokio::sync::mpsc::channel(100);
-    let app_task =
-        crate::application::Application::run_with_xdg(xdg, event_receiver, command_sender);
 
-    let gui_task = tokio::task::spawn_blocking(|| {
-        let gui = deskodon_frontend::Gui::new(event_sender, command_receiver);
+    let gui = deskodon_frontend::Gui::new(event_sender);
+    let gui_handle = gui.handle();
+    let gui_res = gui.run().map_err(crate::error::Error::Gui);
+    let app_task = crate::application::run(gui_handle, event_receiver);
+    let app_res = app_task.join();
 
-        gui.run().map_err(crate::error::Error::Gui)
-    });
-
-    let (_, _) = tokio::join!(gui_task, app_task);
-    Ok(())
+    match (app_res, gui_res) {
+        (Ok(_), Ok(_)) => Ok(()),
+        (Err(error), _) => todo!(),
+        (_, Err(error)) => todo!(),
+    }
 }

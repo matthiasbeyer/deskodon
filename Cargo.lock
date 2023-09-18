@@ -1054,6 +1054,7 @@ dependencies = [
  "futures",
  "mastodon-async",
  "serde",
+ "slint",
  "thiserror",
  "tokio",
  "toml 0.8.0",

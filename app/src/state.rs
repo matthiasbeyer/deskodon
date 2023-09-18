@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 
-use deskodon_lib::CommandSender;
 use tokio::io::AsyncWriteExt;
 
-use crate::error::Error;
+use crate::error::ApplicationError;
 
 pub struct State {
     path: PathBuf,
@@ -16,23 +15,23 @@ struct StateInner {}
 impl State {
     pub async fn load_from_path(
         path: PathBuf,
-        _command_sender: &CommandSender,
-    ) -> Result<Self, Error> {
+        gui: deskodon_frontend::GuiHandle
+    ) -> Result<Self, ApplicationError> {
         let text = if path.exists() {
             tokio::fs::read_to_string(&path)
                 .await
-                .map_err(|error| Error::ReadingState {
+                .map_err(|error| ApplicationError::ReadingState {
                     error,
                     path: path.to_path_buf(),
                 })?
         } else {
-            let state_dir = path.parent().ok_or_else(|| Error::FindingStateDirName {
+            let state_dir = path.parent().ok_or_else(|| ApplicationError::FindingStateDirName {
                 path: path.to_path_buf(),
             })?;
 
             let _ = tokio::fs::create_dir_all(state_dir)
                 .await
-                .map_err(|error| Error::CreatingStateDir {
+                .map_err(|error| ApplicationError::CreatingStateDir {
                     error,
                     path: path.to_path_buf(),
                 })?;
@@ -44,7 +43,7 @@ impl State {
                 .create(true)
                 .open(&path)
                 .await
-                .map_err(|source| Error::OpenStateFile {
+                .map_err(|source| ApplicationError::OpenStateFile {
                     path: path.to_path_buf(),
                     source,
                 })?;
@@ -53,12 +52,12 @@ impl State {
         };
 
         toml::from_str(&text)
-            .map_err(Error::ParsingState)
+            .map_err(ApplicationError::ParsingState)
             .map(|state_inner| State { path, state_inner })
     }
 
-    pub async fn save(&self) -> Result<(), Error> {
-        let ser = toml::to_string(&self.state_inner).map_err(Error::SerializingState)?;
+    pub async fn save(&self) -> Result<(), ApplicationError> {
+        let ser = toml::to_string(&self.state_inner).map_err(ApplicationError::SerializingState)?;
 
         tokio::fs::OpenOptions::new()
             .write(true)
@@ -67,13 +66,13 @@ impl State {
             .create(true)
             .open(&self.path)
             .await
-            .map_err(|source| Error::OpenStateFile {
+            .map_err(|source| ApplicationError::OpenStateFile {
                 path: self.path.to_path_buf(),
                 source,
             })?
             .write_all(ser.as_bytes())
             .await
-            .map_err(|source| Error::WritingState {
+            .map_err(|source| ApplicationError::WritingState {
                 path: self.path.to_path_buf(),
                 source,
             })
