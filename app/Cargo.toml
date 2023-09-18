@@ -6,17 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+futures.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "fs", "net", "io-util", "macros"] }
+tracing.workspace = true
+slint.workspace = true
+
 mastodon-async = { version = "1", default-features = false, features = ["rustls-tls"] }
-futures = "0.3"
 serde = "1"
-thiserror = "1"
-tokio = { version = "1", features = ["rt-multi-thread", "fs", "net", "io-util", "macros"] }
 toml = "0.8"
 tracing-subscriber = "0.3"
-tracing = "0.1"
+url = { workspace = true, features = ["serde"] }
 xdg = "2.5"
-slint = "1.2"
-url = { version = "2.4", features = ["serde"] }
 
 deskodon-frontend = { path = "../frontend" }
 deskodon-lib = { path = "../lib" }

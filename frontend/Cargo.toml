@@ -6,10 +6,10 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-slint = "1.2"
-thiserror = "1"
-tracing = "0.1"
-url = "2.4"
+slint.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+url.workspace = true
 
 deskodon-lib = { path = "../lib" }
 

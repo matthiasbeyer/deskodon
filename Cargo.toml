@@ -7,3 +7,11 @@ members = [
     "lib",
 ]
 
+
+[workspace.dependencies]
+futures = "0.3"
+thiserror = "1"
+tokio = "1"
+tracing = "0.1"
+slint = "1.2"
+url = "2.4"
