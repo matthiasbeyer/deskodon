@@ -25,25 +25,47 @@ export component GuiMain inherits Window {
 
     callback login <=> login_page.login;
 
+    callback show_login_page();
+    show_login_page() => {
+        login_page.visible = true;
+        authorization_display_page.visible = false;
+        loading_page.visible = false;
+    }
+
+    callback show_authorization_page(string);
+    show_authorization_page(url) => {
+        login_page.visible = false;
+        authorization_display_page.url = url;
+        authorization_display_page.visible = true;
+        loading_page.visible = false;
+    }
+
+    callback show_loading_page();
+    show_loading_page() => {
+        login_page.visible = false;
+        authorization_display_page.visible = true;
+        loading_page.visible = true;
+    }
+
     VerticalLayout {
         spacing: 5px;
         preferred-width: 100%;
         preferred-height: 100%;
 
         login_page := LoginPage {
-            visible: !loggedin;
+            visible: false;
         }
 
         authorization_display_page := AuthorizationUrlPage {
-            visible: !loggedin && display_authorization;
+            visible: false;
         }
 
         loading_page := LoadingPage {
-            visible: loggedin && !loaded;
+            visible: false;
         }
 
         MenuBar {
-            visible: loggedin && loaded;
+            visible: false;
             Text {
                 text: "deskodon";
             }

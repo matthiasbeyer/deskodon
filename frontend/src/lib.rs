@@ -47,6 +47,21 @@ pub struct GuiHandle {
 }
 
 impl GuiHandle {
+    pub fn show_login_page(&self) {
+        let gui = self.gui.upgrade().unwrap();
+        gui.invoke_show_login_page();
+    }
+
+    pub fn show_authorization_page(&self, url: url::Url) {
+        let gui = self.gui.upgrade().unwrap();
+        gui.invoke_show_authorization_page(url.to_string().into());
+    }
+
+    pub fn show_loading_page(&self) {
+        let gui = self.gui.upgrade().unwrap();
+        gui.invoke_show_loading_page();
+    }
+
     pub fn notify_loading_config(&self) {
         // TODO
     }
@@ -62,12 +77,5 @@ impl GuiHandle {
     }
 
     pub fn notify_login_failed(&self, reason: String) {
-    }
-
-    pub fn display_authorization_url(&self, url: url::Url) {
-        let gui = self.gui.upgrade().unwrap();
-        gui.set_loggedin(false);
-        gui.set_display_authorization(true);
-        gui.set_authorization_url(url.to_string().into());
     }
 }

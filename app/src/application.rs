@@ -74,7 +74,7 @@ impl Application {
                     let authorization_url =
                         url::Url::parse(&registration.authorize_url().unwrap()).unwrap();
 
-                    self.gui.display_authorization_url(authorization_url.clone());
+                    self.gui.show_authorization_page(authorization_url.clone());
 
                     {
                         let mut state = self.app_state.lock().await;
@@ -93,4 +93,10 @@ struct AppState {
     #[allow(unused)]
     config: Configuration,
     state: State,
+}
+
+impl AppState {
+    pub fn is_logged_in(&self) -> bool {
+        false // TODO
+    }
 }
