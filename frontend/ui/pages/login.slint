@@ -1,5 +1,5 @@
 import { Page } from "../page.slint";
-import { TextEdit, Button } from "std-widgets.slint";
+import { LineEdit, Button } from "std-widgets.slint";
 
 export component LoginPage inherits Page {
     title: "Login";
@@ -14,11 +14,13 @@ export component LoginPage inherits Page {
     VerticalLayout {
         spacing: 5px;
 
-        instance := TextEdit {
+        instance := LineEdit {
+            enabled: true;
             font-size: 20px;
-            text: "mastodon.social";
+            placeholder-text: "Mastodon Instance URL";
             read-only: false;
             width: 100%;
+            height: 25px;
         }
 
         login := Button {
