@@ -11,11 +11,14 @@ pub fn run(
     event_receiver: EventReceiver,
 ) -> std::thread::JoinHandle<Result<(), crate::error::Error>> {
     std::thread::spawn(move || {
+        tracing::info!("Starting runtime");
         let rt = tokio::runtime::Runtime::new().map_err(ApplicationError::AsyncRuntimeCreation)?;
         rt.block_on(async move {
+            tracing::info!("Loading from XDG");
             let xdg =
                 xdg::BaseDirectories::with_prefix("deskodon").map_err(ApplicationError::Xdg)?;
 
+            tracing::info!("Booting application");
             Application::new(xdg, gui, event_receiver).await?.run().await
         })
         .map_err(Error::Application)
@@ -42,6 +45,7 @@ impl Application {
             crate::state::State::load_from_path(xdg.get_state_file("state.toml"), gui.clone()),
         )?;
 
+        tracing::debug!("Loading config and state finished");
         Ok(Application {
             app_state: Mutex::new(AppState { config, state }),
             gui,
@@ -50,6 +54,7 @@ impl Application {
     }
 
     pub async fn run(mut self) -> Result<(), ApplicationError> {
+        tracing::info!("Running application");
         if self.app_state.lock().await.is_logged_in() {
             tracing::info!("Logged in, showing loading page");
             self.gui.show_loading_page();

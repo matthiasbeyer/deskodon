@@ -12,11 +12,13 @@ pub struct Configuration {
 impl Configuration {
     pub async fn load_from_path(
         path: PathBuf,
-        gui: deskodon_frontend::GuiHandle
+        gui: deskodon_frontend::GuiHandle,
     ) -> Result<Self, ApplicationError> {
         if path.exists() {
+            tracing::debug!(path = %path.display(), "Configuration path exists");
             gui.notify_loading_config();
         } else {
+            tracing::debug!(path = %path.display(), "Configuration path does not exist, creating");
             gui.notify_creating_default_config();
             let _ = tokio::fs::create_dir_all(path.parent().unwrap()) // TODO
                 .await
@@ -36,6 +38,7 @@ impl Configuration {
                 })?;
         }
 
+        tracing::debug!(path = %path.display(), "Reading Configuration");
         tokio::fs::read_to_string(&path)
             .await
             .map_err(ApplicationError::ReadingConfig)
@@ -44,6 +47,7 @@ impl Configuration {
     }
 
     pub async fn save(&self) -> Result<(), ApplicationError> {
+        tracing::debug!(path = %self.path.display(), "Saving Configuration");
         let config = toml::to_string(&self.config).map_err(ApplicationError::SerializingConfig)?;
 
         tokio::fs::OpenOptions::new()

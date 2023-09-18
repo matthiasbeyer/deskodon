@@ -24,16 +24,20 @@ impl State {
         gui: deskodon_frontend::GuiHandle
     ) -> Result<Self, ApplicationError> {
         if path.exists() {
+            tracing::debug!(path = %path.display(), "State file exists");
             let text = tokio::fs::read_to_string(&path)
                 .await
                 .map_err(|error| ApplicationError::ReadingState {
                     error,
                     path: path.to_path_buf(),
                 })?;
+
+            tracing::debug!(?text, "State file read");
             toml::from_str(&text)
                 .map_err(ApplicationError::ParsingState)
                 .map(|state_inner| State { path, state_inner })
         } else {
+            tracing::debug!(path = %path.display(), "State file does not exist");
             let state_dir = path.parent().ok_or_else(|| ApplicationError::FindingStateDirName {
                 path: path.to_path_buf(),
             })?;
@@ -65,6 +69,7 @@ impl State {
     }
 
     pub async fn save(&self) -> Result<(), ApplicationError> {
+        tracing::debug!(path = %self.path.display(), "Saving State file");
         let ser = toml::to_string(&self.state_inner).map_err(ApplicationError::SerializingState)?;
 
         tokio::fs::OpenOptions::new()
