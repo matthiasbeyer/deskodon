@@ -15,6 +15,13 @@ pub enum Error {
         path: PathBuf,
     },
 
+    #[error("Failed to create directory for config: {}", .path.display())]
+    CreatingConfigDir {
+        #[source]
+        error: std::io::Error,
+        path: PathBuf,
+    },
+
     #[error("Failed to read configuration")]
     ReadingConfig(#[source] std::io::Error),
 
@@ -38,8 +45,12 @@ pub enum Error {
         source: std::io::Error,
     },
 
-    #[error("Failed to read state")]
-    ReadingState(#[source] std::io::Error),
+    #[error("Failed to read state: {}", .path.display())]
+    ReadingState {
+        #[source]
+        error: std::io::Error,
+        path: PathBuf,
+    },
 
     #[error("Failed to parse state")]
     ParsingState(#[source] toml::de::Error),

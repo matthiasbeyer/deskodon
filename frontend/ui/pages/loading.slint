@@ -1,0 +1,18 @@
+import { Page } from "../page.slint";
+import { ProgressIndicator } from "std-widgets.slint";
+
+export component LoadingPage inherits Page {
+    title: "Loading";
+
+    preferred-width: 100%;
+    preferred-height: 100%;
+
+    min-width: 1024px;
+    min-height: 800px;
+
+    in-out property <bool> enabled;
+
+    progress := ProgressIndicator {
+        progress: 0%;
+    }
+}

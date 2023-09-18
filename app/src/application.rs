@@ -8,24 +8,34 @@ use tokio::sync::Mutex;
 
 pub struct Application {
     app_state: Mutex<AppState>,
+    event_receiver: EventReceiver,
+    command_sender: CommandSender,
 }
 
 impl Application {
-    pub async fn load_from_xdg(xdg: xdg::BaseDirectories) -> Result<Self, crate::error::Error> {
+    pub async fn run_with_xdg(
+        xdg: xdg::BaseDirectories,
+        event_receiver: EventReceiver,
+        command_sender: CommandSender,
+    ) -> Result<(), crate::error::Error> {
         let (config, state) = tokio::try_join!(
-            crate::configuration::Configuration::load_from_path(xdg.get_config_file("config.toml")),
-            crate::state::State::load_from_path(xdg.get_state_file("state.toml")),
+            crate::configuration::Configuration::load_from_path(
+                xdg.get_config_file("config.toml"),
+                &command_sender
+            ),
+            crate::state::State::load_from_path(xdg.get_state_file("state.toml"), &command_sender),
         )?;
 
-        let app_state = Mutex::new(AppState { config, state });
-        Ok(Application { app_state })
+        Application {
+            app_state: Mutex::new(AppState { config, state }),
+            event_receiver,
+            command_sender,
+        }
+        .run()
+        .await
     }
 
-    pub async fn run(
-        &self,
-        mut event_receiver: EventReceiver,
-        mut command_sender: CommandSender,
-    ) -> Result<(), Error> {
+    pub async fn run(mut self) -> Result<(), Error> {
         unimplemented!()
     }
 }

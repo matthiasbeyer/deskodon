@@ -10,15 +10,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (command_sender, command_receiver) = tokio::sync::mpsc::channel(100);
     let (event_sender, event_receiver) = tokio::sync::mpsc::channel(100);
-    let app = crate::application::Application::load_from_xdg(xdg).await?;
+    let app_task =
+        crate::application::Application::run_with_xdg(xdg, event_receiver, command_sender);
 
     let gui_task = tokio::task::spawn_blocking(|| {
         let gui = deskodon_frontend::Gui::new(event_sender, command_receiver);
 
         gui.run().map_err(crate::error::Error::Gui)
     });
-
-    let app_task = app.run(event_receiver, command_sender);
 
     let (_, _) = tokio::join!(gui_task, app_task);
     Ok(())

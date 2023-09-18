@@ -1,0 +1,34 @@
+import { Page } from "../page.slint";
+import { TextEdit, Button } from "std-widgets.slint";
+
+export component LoginPage inherits Page {
+    title: "Login";
+
+    in-out property <bool> enabled;
+
+    preferred-width: 100%;
+    preferred-height: 100%;
+
+    VerticalLayout {
+        spacing: 5px;
+
+        instance := TextEdit {
+            font-size: 20px;
+            enabled: true;
+            read-only: false;
+        }
+
+        user := TextEdit {
+            font-size: 20px;
+            enabled: true;
+            read-only: false;
+        }
+
+        login := Button {
+            text: "Login";
+        }
+    }
+}
+
+
+
