@@ -12,14 +12,20 @@ pub fn run(
 ) -> std::thread::JoinHandle<Result<(), crate::error::Error>> {
     std::thread::spawn(move || {
         tracing::info!("Starting runtime");
-        let rt = tokio::runtime::Runtime::new().map_err(ApplicationError::AsyncRuntimeCreation)?;
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .worker_threads(4)
+            .build()
+            .map_err(ApplicationError::AsyncRuntimeCreation)?;
         rt.block_on(async move {
             tracing::info!("Loading from XDG");
             let xdg =
                 xdg::BaseDirectories::with_prefix("deskodon").map_err(ApplicationError::Xdg)?;
 
             tracing::info!("Booting application");
-            Application::new(xdg, gui, event_receiver).await?.run().await
+            Application::new(xdg, gui, event_receiver)
+                .await?
+                .run()
+                .await
         })
         .map_err(Error::Application)
     })
