@@ -6,4 +6,4 @@ Built with Rust.
 
 ## License
 
-GPL-2.0 only
+GPL-3.0
