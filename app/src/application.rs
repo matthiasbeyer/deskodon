@@ -50,6 +50,14 @@ impl Application {
     }
 
     pub async fn run(mut self) -> Result<(), ApplicationError> {
+        if self.app_state.lock().await.is_logged_in() {
+            tracing::info!("Logged in, showing loading page");
+            self.gui.show_loading_page();
+        } else {
+            tracing::info!("Not logged in, showing login page");
+            self.gui.show_login_page();
+        }
+
         while let Some(event) = self.event_receiver.recv().await {
             tracing::info!(?event, "Received event");
 
