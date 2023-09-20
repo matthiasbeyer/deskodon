@@ -42,7 +42,10 @@ impl Configuration {
         tokio::fs::read_to_string(&path)
             .await
             .map_err(ApplicationError::ReadingConfig)
-            .and_then(|text| toml::from_str(&text).map_err(ApplicationError::ParsingConfig))
+            .and_then(|text| {
+                tracing::debug!(?text, "Parsing configuration");
+                toml::from_str(&text).map_err(ApplicationError::ParsingConfig)
+            })
             .map(|config| {
                 tracing::debug!("Configuration instantiated");
                 Configuration { path, config }
