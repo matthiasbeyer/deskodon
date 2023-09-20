@@ -4,5 +4,9 @@ pub enum Event {
 
     Login {
         instance: String,
-    }
+    },
+
+    OpenInBrowser {
+        url: String,
+    },
 }

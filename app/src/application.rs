@@ -98,6 +98,25 @@ impl Application {
                         state.state.set_to_waiting_for_auth(authorization_url);
                         state.state.save().await?;
                     }
+                },
+
+                deskodon_lib::Event::OpenInBrowser { url } => {
+                    tracing::debug!(?url, "Trying to open url in browser");
+                    match url::Url::parse(&url) {
+                        Ok(url) => {
+                            match open::that(url.as_ref()) {
+                                Ok(_) => {
+                                    tracing::info!("Browser should be open now");
+                                }
+                                Err(error) => {
+                                    tracing::error!(?error, "Failed to open browser");
+                                }
+                            }
+                        }
+                        Err(error) => {
+                            tracing::error!(?error, "Failed to parse as URL: {url}")
+                        }
+                    }
                 }
             }
         }

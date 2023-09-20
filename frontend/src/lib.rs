@@ -26,6 +26,7 @@ impl Gui {
 
     pub fn run(self) -> Result<(), crate::error::Error> {
         self.install_login_callbacks();
+        self.install_open_in_browser_callback();
         self.gui.run().map_err(crate::error::Error::from)
     }
 
@@ -37,6 +38,18 @@ impl Gui {
                 instance: instance.to_string(),
             });
             tracing::debug!("event sent");
+        })
+    }
+
+    fn install_open_in_browser_callback(&self) {
+        tracing::debug!("installing open_in_browser() callback");
+        let event_sender = self.event_sender.clone();
+        self.gui.on_open_url_in_browser(move |url| {
+            tracing::info!(?url, "open_url_in_browser() invoked");
+            let _ = event_sender.blocking_send(Event::OpenInBrowser {
+                url: url.to_string(),
+            });
+            tracing::debug!("Event sent");
         })
     }
 }
