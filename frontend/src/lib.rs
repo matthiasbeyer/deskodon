@@ -25,7 +25,6 @@ impl Gui {
     }
 
     pub fn run(self) -> Result<(), crate::error::Error> {
-        self.install_init_callback();
         self.install_login_callbacks();
         self.gui.run().map_err(crate::error::Error::from)
     }
