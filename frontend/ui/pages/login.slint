@@ -9,12 +9,12 @@ export component LoginPage inherits Page {
     callback login(string);
     callback notify_login_in_progress();
     notify_login_in_progress() => {
-        logging_in_popup.show();
+        // logging_in_popup.show();
     }
 
     callback notify_login_succeeded();
     notify_login_succeeded() => {
-        logging_in_popup.close();
+        // logging_in_popup.close();
     }
 
     preferred-width: 100%;
