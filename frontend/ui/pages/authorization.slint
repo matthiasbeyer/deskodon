@@ -1,5 +1,5 @@
 import { Page } from "../page.slint";
-import { TextEdit } from "std-widgets.slint";
+import { LineEdit } from "std-widgets.slint";
 
 export component AuthorizationUrlPage inherits Page {
     title: "Authorize";
@@ -12,12 +12,14 @@ export component AuthorizationUrlPage inherits Page {
     VerticalLayout {
         spacing: 5px;
 
-        instance := TextEdit {
-            text: root.url;
+        instance := LineEdit {
+            enabled: true;
+            visible: true;
             read-only: true;
-
             font-size: 20px;
             width: 100%;
+
+            text: root.url;
         }
     }
 }
