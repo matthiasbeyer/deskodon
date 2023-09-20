@@ -77,9 +77,17 @@ impl GuiHandle {
     }
 
     pub fn notify_logging_in(&self) {
+        tracing::debug!("Notification received: Logging in");
+        self.gui
+            .upgrade_in_event_loop(|gui| gui.invoke_notify_login_in_progress())
+            .unwrap();
     }
 
     pub fn notify_login_succeeded(&self) {
+        tracing::debug!("Notification received: Logging in");
+        self.gui
+            .upgrade_in_event_loop(|gui| gui.invoke_notify_login_succeeded())
+            .unwrap();
     }
 
     pub fn notify_login_failed(&self, reason: String) {

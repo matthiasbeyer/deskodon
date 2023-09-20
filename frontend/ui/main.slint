@@ -23,8 +23,9 @@ export component GuiMain inherits Window {
     in property <bool> display_authorization;
     in property <string> authorization_url;
 
-
     callback login <=> login_page.login;
+    callback notify_login_in_progress <=> login_page.notify_login_in_progress;
+    callback notify_login_succeeded <=> login_page.notify_login_succeeded;
 
     callback show_login_page();
     show_login_page() => {
