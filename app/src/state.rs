@@ -42,11 +42,12 @@ impl State {
                 .map_err(ApplicationError::ParsingState)
                 .map(|state_inner| State { path, state_inner })
         } else {
-            tracing::debug!(path = %path.display(), "State file does not exist");
+            tracing::debug!(path = %path.display(), "State file does not exist, creating new one");
             let state_dir = path.parent().ok_or_else(|| ApplicationError::FindingStateDirName {
                 path: path.to_path_buf(),
             })?;
 
+            tracing::debug!(?state_dir, "Creating state directory");
             let _ = tokio::fs::create_dir_all(state_dir)
                 .await
                 .map_err(|error| ApplicationError::CreatingStateDir {
@@ -54,24 +55,15 @@ impl State {
                     path: path.to_path_buf(),
                 })?;
 
-            let _ = tokio::fs::OpenOptions::new()
-                .write(true)
-                .truncate(true)
-                .append(false)
-                .create(true)
-                .open(&path)
-                .await
-                .map_err(|source| ApplicationError::OpenStateFile {
-                    path: path.to_path_buf(),
-                    source,
-                })?;
-
-            Ok(State {
+            let state = State {
                 path,
                 state_inner: StateInner {
                     app_state: ApplicationState::None,
                 },
-            })
+            };
+
+            state.save().await?;
+            Ok(state)
         }
     }
 
