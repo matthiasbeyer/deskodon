@@ -13,6 +13,7 @@ pub fn run(
     std::thread::spawn(move || {
         tracing::info!("Starting runtime");
         let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_io()
             .worker_threads(4)
             .build()
             .map_err(ApplicationError::AsyncRuntimeCreation)?;
