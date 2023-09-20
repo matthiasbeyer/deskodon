@@ -4,7 +4,6 @@ use crate::error::Error;
 use crate::state::State;
 
 use deskodon_lib::EventReceiver;
-use mastodon_async::prelude::Event;
 use tokio::sync::Mutex;
 
 pub fn run(
