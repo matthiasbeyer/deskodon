@@ -57,7 +57,7 @@ impl GuiHandle {
     pub fn show_authorization_page(&self, url: url::Url) {
         tracing::debug!("Showing authorization page");
         self.gui
-            .upgrade_in_event_loop(|gui| gui.invoke_show_authorization_page(url.to_string().into()))
+            .upgrade_in_event_loop(move |gui| gui.invoke_show_authorization_page(url.to_string().into()))
             .unwrap();
     }
 
