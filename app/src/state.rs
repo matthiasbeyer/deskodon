@@ -26,7 +26,7 @@ enum ApplicationState {
 impl State {
     pub async fn load_from_path(
         path: PathBuf,
-        gui: deskodon_frontend::GuiHandle
+        _gui: deskodon_frontend::GuiHandle
     ) -> Result<Self, ApplicationError> {
         if path.exists() {
             tracing::debug!(path = %path.display(), "State file exists");
