@@ -14,6 +14,7 @@ pub fn run(
         tracing::info!("Starting runtime");
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_io()
+            .enable_time()
             .worker_threads(4)
             .build()
             .map_err(ApplicationError::AsyncRuntimeCreation)?;
