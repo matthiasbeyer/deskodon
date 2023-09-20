@@ -50,18 +50,23 @@ pub struct GuiHandle {
 impl GuiHandle {
     pub fn show_login_page(&self) {
         tracing::debug!("Showing login page");
-        let gui = self.gui.upgrade().unwrap();
-        gui.invoke_show_login_page();
+        self.gui
+            .upgrade_in_event_loop(|gui| gui.invoke_show_login_page())
+            .unwrap();
     }
 
     pub fn show_authorization_page(&self, url: url::Url) {
-        let gui = self.gui.upgrade().unwrap();
-        gui.invoke_show_authorization_page(url.to_string().into());
+        tracing::debug!("Showing authorization page");
+        self.gui
+            .upgrade_in_event_loop(|gui| gui.invoke_show_authorization_page(url.to_string().into()))
+            .unwrap();
     }
 
     pub fn show_loading_page(&self) {
-        let gui = self.gui.upgrade().unwrap();
-        gui.invoke_show_loading_page();
+        tracing::debug!("Showing loading page");
+        self.gui
+            .upgrade_in_event_loop(|gui| gui.invoke_show_loading_page())
+            .unwrap();
     }
 
     pub fn notify_loading_config(&self) {
