@@ -30,15 +30,6 @@ impl Gui {
         self.gui.run().map_err(crate::error::Error::from)
     }
 
-    fn install_init_callback(&self) {
-        let event_sender = self.event_sender.clone();
-        self.gui.on_notify_gui_booted(move || {
-            tracing::info!("notify_gui_booted() invoked");
-            let _ = event_sender.blocking_send(Event::GuiBooted);
-            tracing::debug!("Event sent");
-        })
-    }
-
     fn install_login_callbacks(&self) {
         let event_sender = self.event_sender.clone();
         self.gui.on_login(move |instance| {

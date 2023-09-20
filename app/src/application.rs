@@ -60,13 +60,6 @@ impl Application {
     }
 
     pub async fn run(mut self) -> Result<(), ApplicationError> {
-        if let Some(deskodon_lib::Event::GuiBooted) = self.event_receiver.recv().await {
-            tracing::info!("Gui booted")
-        } else {
-            tracing::error!("Gui sent something that is not 'GuiBooted'");
-            return Err(ApplicationError::BootFailed)
-        }
-
         tracing::info!("Running application");
         if self.app_state.lock().await.is_logged_in() {
             tracing::info!("Logged in, showing loading page");

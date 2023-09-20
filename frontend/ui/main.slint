@@ -25,11 +25,6 @@ export component GuiMain inherits Window {
 
 
     callback login <=> login_page.login;
-    callback notify_gui_booted();
-
-    init => {
-        notify_gui_booted()
-    }
 
     callback show_login_page();
     show_login_page() => {
