@@ -3,7 +3,22 @@ use std::path::PathBuf;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Error in GUI")]
-    Gui(#[source] deskodon_frontend::error::Error),
+    Gui(#[from] deskodon_frontend::error::Error),
+
+    #[error("Error in application")]
+    Application(#[from] ApplicationError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ApplicationError {
+    #[error("Application booting failed")]
+    BootFailed,
+
+    #[error("Failed to create async runtime")]
+    AsyncRuntimeCreation(#[source] std::io::Error),
+
+    #[error(transparent)]
+    Xdg(#[from] xdg::BaseDirectoriesError),
 
     #[error("Failed to find directory name for state file: {}", .path.display())]
     FindingStateDirName { path: PathBuf },

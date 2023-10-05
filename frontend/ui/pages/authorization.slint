@@ -1,0 +1,35 @@
+import { Page } from "../page.slint";
+import { LineEdit, Button } from "std-widgets.slint";
+
+export component AuthorizationUrlPage inherits Page {
+    title: "Authorize";
+
+    in-out property <string> url;
+
+    callback open_url_in_browser(string);
+
+    preferred-width: 100%;
+    preferred-height: 100%;
+
+    VerticalLayout {
+        spacing: 5px;
+
+        instance := LineEdit {
+            enabled: true;
+            visible: true;
+            read-only: true;
+            font-size: 20px;
+            width: 100%;
+
+            text: root.url;
+        }
+
+        open_instance_in_browser_button := Button {
+            text: "Open in Browser";
+
+            clicked => {
+                open_url_in_browser(instance.text);
+            }
+        }
+    }
+}

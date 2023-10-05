@@ -1,42 +1,127 @@
 use crate::configuration::Configuration;
+use crate::error::ApplicationError;
 use crate::error::Error;
 use crate::state::State;
 
-use deskodon_lib::CommandSender;
 use deskodon_lib::EventReceiver;
 use tokio::sync::Mutex;
 
+pub fn run(
+    gui: deskodon_frontend::GuiHandle,
+    event_receiver: EventReceiver,
+) -> std::thread::JoinHandle<Result<(), crate::error::Error>> {
+    std::thread::spawn(move || {
+        tracing::info!("Starting runtime");
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_io()
+            .enable_time()
+            .worker_threads(4)
+            .build()
+            .map_err(ApplicationError::AsyncRuntimeCreation)?;
+        rt.block_on(async move {
+            tracing::info!("Loading from XDG");
+            let xdg =
+                xdg::BaseDirectories::with_prefix("deskodon").map_err(ApplicationError::Xdg)?;
+
+            tracing::info!("Booting application");
+            Application::new(xdg, gui, event_receiver)
+                .await?
+                .run()
+                .await
+        })
+        .map_err(Error::Application)
+    })
+}
+
 pub struct Application {
     app_state: Mutex<AppState>,
+    gui: deskodon_frontend::GuiHandle,
     event_receiver: EventReceiver,
-    command_sender: CommandSender,
 }
 
 impl Application {
-    pub async fn run_with_xdg(
+    pub async fn new(
         xdg: xdg::BaseDirectories,
+        gui: deskodon_frontend::GuiHandle,
         event_receiver: EventReceiver,
-        command_sender: CommandSender,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<Self, ApplicationError> {
         let (config, state) = tokio::try_join!(
             crate::configuration::Configuration::load_from_path(
                 xdg.get_config_file("config.toml"),
-                &command_sender
+                gui.clone(),
             ),
-            crate::state::State::load_from_path(xdg.get_state_file("state.toml"), &command_sender),
+            crate::state::State::load_from_path(xdg.get_state_file("state.toml"), gui.clone()),
         )?;
 
-        Application {
+        tracing::debug!("Loading config and state finished");
+        Ok(Application {
             app_state: Mutex::new(AppState { config, state }),
+            gui,
             event_receiver,
-            command_sender,
-        }
-        .run()
-        .await
+        })
     }
 
-    pub async fn run(mut self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn run(mut self) -> Result<(), ApplicationError> {
+        tracing::info!("Running application");
+        if self.app_state.lock().await.is_logged_in() {
+            tracing::info!("Logged in, showing loading page");
+            self.gui.show_loading_page();
+        } else {
+            tracing::info!("Not logged in, showing login page");
+            self.gui.show_login_page();
+        }
+
+        while let Some(event) = self.event_receiver.recv().await {
+            tracing::info!(?event, "Received event");
+
+            match event {
+                deskodon_lib::Event::GuiBooted => {
+                    // should not happen anymore
+                },
+
+                deskodon_lib::Event::Login { instance } => {
+                    self.gui.notify_logging_in();
+                    let registration = mastodon_async::Registration::new(instance)
+                        .client_name("deskodon")
+                        .build()
+                        .await
+                        .unwrap();
+
+                    self.gui.notify_login_succeeded();
+                    let authorization_url =
+                        url::Url::parse(&registration.authorize_url().unwrap()).unwrap();
+
+                    self.gui.show_authorization_page(authorization_url.clone());
+
+                    {
+                        let mut state = self.app_state.lock().await;
+                        state.state.set_to_waiting_for_auth(authorization_url);
+                        state.state.save().await?;
+                    }
+                },
+
+                deskodon_lib::Event::OpenInBrowser { url } => {
+                    tracing::debug!(?url, "Trying to open url in browser");
+                    match url::Url::parse(&url) {
+                        Ok(url) => {
+                            match open::that(url.as_ref()) {
+                                Ok(_) => {
+                                    tracing::info!("Browser should be open now");
+                                }
+                                Err(error) => {
+                                    tracing::error!(?error, "Failed to open browser");
+                                }
+                            }
+                        }
+                        Err(error) => {
+                            tracing::error!(?error, "Failed to parse as URL: {url}")
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -44,4 +129,10 @@ struct AppState {
     #[allow(unused)]
     config: Configuration,
     state: State,
+}
+
+impl AppState {
+    pub fn is_logged_in(&self) -> bool {
+        false // TODO
+    }
 }

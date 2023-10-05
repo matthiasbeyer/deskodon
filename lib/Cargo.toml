@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tokio = { version = "1", features = ["sync"] }
-thiserror = "1"
+tokio = { workspace = true, features = ["sync"] }
+thiserror.workspace = true
 

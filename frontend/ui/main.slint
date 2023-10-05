@@ -6,6 +6,7 @@ import { SideBar } from "sidebar.slint";
 import { AboutPage } from "pages/about.slint";
 import { LoadingPage } from "pages/loading.slint";
 import { LoginPage } from "pages/login.slint";
+import { AuthorizationUrlPage } from "pages/authorization.slint";
 import { MainPage } from "pages/main.slint";
 import { MyProfilePage } from "pages/my_profile.slint";
 import { SettingsPage } from "pages/settings.slint";
@@ -17,26 +18,57 @@ export component GuiMain inherits Window {
     preferred-width: 100%;
     preferred-height: 100%;
 
-    property <bool> loaded;
-    property <bool> loggedin;
+    in property <bool> loaded;
+    in property <bool> loggedin;
+    in property <bool> display_authorization;
+    in property <string> authorization_url;
 
-    callback post_text_content <=> main-page.post_text_content;
+    callback login <=> login_page.login;
+    callback notify_login_in_progress <=> login_page.notify_login_in_progress;
+    callback notify_login_succeeded <=> login_page.notify_login_succeeded;
+    callback open_url_in_browser <=> authorization_display_page.open_url_in_browser;
+
+    callback show_login_page();
+    show_login_page() => {
+        login_page.visible = true;
+        authorization_display_page.visible = false;
+        loading_page.visible = false;
+    }
+
+    callback show_authorization_page(string);
+    show_authorization_page(url) => {
+        login_page.visible = false;
+        authorization_display_page.url = url;
+        authorization_display_page.visible = true;
+        loading_page.visible = false;
+    }
+
+    callback show_loading_page();
+    show_loading_page() => {
+        login_page.visible = false;
+        authorization_display_page.visible = true;
+        loading_page.visible = true;
+    }
 
     VerticalLayout {
         spacing: 5px;
         preferred-width: 100%;
         preferred-height: 100%;
 
-        login := LoginPage {
-            visible: !loggedin;
+        login_page := LoginPage {
+            visible: false;
         }
 
-        loading := LoadingPage {
-            visible: loggedin && !loaded;
+        authorization_display_page := AuthorizationUrlPage {
+            visible: false;
+        }
+
+        loading_page := LoadingPage {
+            visible: false;
         }
 
         MenuBar {
-            visible: loggedin && loaded;
+            visible: false;
             Text {
                 text: "deskodon";
             }
